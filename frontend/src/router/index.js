@@ -4,7 +4,11 @@ import { createRouter, createWebHistory } from "vue-router";
 import LoginPage from "@/views/auth/LoginPage.vue";
 import RegisterPage from "@/views/auth/RegisterPage.vue";
 
+import AdminCryptoPage from "@/views/admin/CryptoPage.vue";
+import UserCryptoPage from "@/views/user/CryptoPage.vue";
+
 const routes = [
+    // auth
     {
         path: "/",
         component: LoginPage
@@ -18,6 +22,22 @@ const routes = [
         path: "/register",
         name: "RegisterPage",
         component: RegisterPage
+    },
+
+    // admin
+    {
+        path: "/admin/cryptoPage",
+        name: "adminCryptoPage",
+        component: AdminCryptoPage,
+        meta: { requiresAuth: true, role: "admin" },
+    },
+
+    // user 
+    {
+        path: "/user/cryptoPage",
+        name: "userCryptoPage",
+        component: UserCryptoPage,
+        meta: { requiresAuth: true, role: "user" },
     }
 ]
 
@@ -25,5 +45,23 @@ const router = createRouter({
     history: createWebHistory(),
     routes,
 })
+
+// navigation guard to check the role
+router.beforeEach((to, from, next) => {
+    const token = localStorage.getItem("accessToken");
+    const role = localStorage.getItem("role");
+
+    if (to.meta.requiresAuth) {
+        if(!token) {
+            next("/login"); // redirect to login if not authenticated
+        } else if (to.meta.role && to.meta.role !== role) {
+            next("/login"); // redirect to login if role do not match
+        } else {
+            next();
+        }
+    } else {
+        next();
+    }
+});
 
 export default router;
