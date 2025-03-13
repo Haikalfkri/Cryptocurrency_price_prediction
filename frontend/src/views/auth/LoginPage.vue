@@ -56,10 +56,14 @@ export default {
 
                 const token = response.data.access;
                 const role = response.data.role;
+                const username = response.data.username;
+                const email = response.data.email;
 
                 // store token and role to localStorage
                 localStorage.setItem('accessToken', token);
                 localStorage.setItem('role', role);
+                localStorage.setItem('username', username);
+                localStorage.setItem('email', email)
 
                 // redirect based on role
                 if (role == 'user') {

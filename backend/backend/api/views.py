@@ -35,7 +35,9 @@ class LoginView(APIView):
                 refresh = RefreshToken.for_user(user)
                 response = Response({
                     "access": str(refresh.access_token),
-                    "role": user.role.name
+                    "role": user.role.name,
+                    "username": user.username,
+                    "email": user.email,
                 })
                 
                 # store refresh token in HttpOnly cookie
