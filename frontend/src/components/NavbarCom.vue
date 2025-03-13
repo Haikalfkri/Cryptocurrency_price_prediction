@@ -16,8 +16,8 @@
                     class="z-50 absolute right-0 mt-[160px] w-48 bg-white divide-y divide-gray-100 rounded-lg shadow-md dark:bg-gray-700 dark:divide-gray-600"
                     id="user-dropdown">
                     <div class="px-4 py-3">
-                        <span class="block text-sm text-gray-900 dark:text-white">Bonnie Green</span>
-                        <span class="block text-sm text-gray-500 truncate dark:text-gray-400">name@flowbite.com</span>
+                        <span class="block text-sm text-gray-900 dark:text-white">{{ username }}</span>
+                        <span class="block text-sm text-gray-500 truncate dark:text-gray-400">{{ email }}</span>
                     </div>
                     <ul class="py-2">
                         <li>
@@ -65,6 +65,8 @@ export default {
     data() {
         return {
             isDropdownOpen: false,
+            username: localStorage.getItem("username"),
+            email: localStorage.getItem("email"),
         };
     },
     methods: {
@@ -83,6 +85,8 @@ export default {
                 // remove access token & role from localstorage
                 localStorage.removeItem("accessToken");
                 localStorage.removeItem("role");
+                localStorage.removeItem("username");
+                localStorage.removeItem("email");
 
                 // redirect to login page
                 this.$router.push("/login").then(() => {
@@ -91,11 +95,6 @@ export default {
             } catch (error) {
                 console.log("Logout failed")
             }
-        },
-
-        // get user role from localhost
-        userRole() {
-            return localStorage.getItem('role');
         },
         // dropdown button
         toggleDropdown() {
