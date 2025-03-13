@@ -52,7 +52,7 @@ export default {
                 const response = await axios.post("http://localhost:8000/api/v1/login", {
                     email: this.email,
                     password: this.password,
-                });
+                },{ withCredentials: true });
 
                 const token = response.data.access;
                 const role = response.data.role;

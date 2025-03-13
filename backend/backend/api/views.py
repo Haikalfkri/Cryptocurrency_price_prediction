@@ -33,11 +33,22 @@ class LoginView(APIView):
 
             if user:
                 refresh = RefreshToken.for_user(user)
-                return Response({
-                    "refresh": str(refresh),
+                response = Response({
                     "access": str(refresh.access_token),
                     "role": user.role.name
                 })
+                
+                # store refresh token in HttpOnly cookie
+                response.set_cookie(
+                    key="refresh_token",
+                    value=str(refresh),
+                    httponly=True,
+                    secure=True,
+                    samesite="Lax",
+                )
+
+                return response
+
             return Response({
                 "error": "Invalid Credentials"
             }, status=status.HTTP_401_UNAUTHORIZED)
@@ -50,18 +61,25 @@ class LogoutView(APIView):
 
     def post(self, request):
         try:
-            refresh_token = request.data.get("refresh")
+            # Get refresh token from HttpOnly cookie
+            refresh_token = request.COOKIES.get("refresh_token")
             if not refresh_token:
                 return Response({
                     "error": "Refresh token is required"
                 }, status=status.HTTP_400_BAD_REQUEST)
 
-            token = RefreshToken(refresh_token)
-            token.blacklist()
+            # blacklist the refresh token
+            try:
+                token = RefreshToken(refresh_token)
+                token.blacklist()    
+            except Exception:
+                return Response({"error": "Invalid refresh token"}, status=status.HTTP_400_BAD_REQUEST)
 
-            return Response({
-                "message": "User logged out successfully"
-            }, status=status.HTTP_200_OK)
+            # Create response and delete refresh_token cookie
+            response = Response({"message": "User logged out successfully"}, status=status.HTTP_200_OK)
+            response.delete_cookie("refresh_token")
+            return response
+
         except Exception as e:
             return Response({
                 "error": "Invalid token"

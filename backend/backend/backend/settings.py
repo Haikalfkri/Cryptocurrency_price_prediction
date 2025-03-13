@@ -32,7 +32,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -58,11 +57,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-]
-
-# Allowed Origins
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8080",
 ]
 
 ROOT_URLCONF = 'backend.urls'
@@ -162,3 +156,13 @@ SIMPLE_JWT = {
     'SIGNING_KEY': SECRET_KEY,
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
+
+# Allowed Origins
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGIN = False
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8080",
+]
+
+CSRF_COOKIE_HTTPONLY = True
+SESSION_COOKIE_HTTPONLY = True
