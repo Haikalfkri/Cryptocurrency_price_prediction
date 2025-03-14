@@ -1,8 +1,8 @@
 <template>
-    <form class="flex items-center max-w-lg mx-auto mt-10">
+    <form @submit.prevent="fetchCryptoData" class="flex items-center max-w-lg mx-auto mt-10">
         <label for="voice-search" class="sr-only">Search</label>
         <div class="relative w-full">
-            <input type="text" id="voice-search"
+            <input v-model="cryptoName" type="text" id="crypto-search"
                 class="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 placeholder="Search Crypto e.g BTC-USD" required />
         </div>
@@ -15,10 +15,62 @@
             </svg>Search
         </button>
     </form>
+
+    <!-- Loading State -->
+    <p v-if="loading" class="text-center mt-4 text-gray-600">Fetching data...</p>
+
+    <!-- Error Message -->
+    <p v-if="error" class="text-center mt-4 text-red-500">{{ error }}</p>
+
+    <!-- Crypto Data Display -->
+    <div v-if="cryptoData" class="mt-6 text-center bg-gray-100 dark:bg-gray-800 p-4 rounded-lg shadow-lg">
+        <h2 class="text-lg font-semibold">{{ cryptoName.toUpperCase() }}</h2>
+        <p><strong>Price (USD):</strong> ${{ cryptoData["Price"] }}</p>
+        <p><strong>Market Cap (USD):</strong> ${{ cryptoData["MarketCap"] }}</p>
+        <p><strong>24h Volume:</strong> ${{ cryptoData["24hVolume"] }}</p>
+        <p><strong>FDV (USD):</strong> ${{ cryptoData["FDV"] }}</p>
+        <p><strong>Total Supply:</strong> {{ cryptoData["TotalSupply"] }}</p>
+        <p><strong>Max Supply:</strong> {{ cryptoData?.MaxSupply || "Null" }}</p>
+        <p><strong>Circulating Supply:</strong> {{ cryptoData["CirculatingSupply"] }}</p>
+        <p><strong>Market Cap Change Percentage (24h):</strong> {{ cryptoData["MarketCapChangePercentage"] }}%</p>
+        <p><strong>Description:</strong>{{ cryptoData["Description"] }}</p>
+    </div>
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
-    name: "CryptoSearchButton"
+    name: "CryptoSearchButton",
+    data() {
+        return {
+            cryptoName: "",
+            cryptoData: null,
+            loading: false,
+            error: null,
+        }
+    },
+    methods: {
+        async fetchCryptoData() {
+            if (!this.cryptoName) return;
+
+            this.loading = true;
+            this.error = null;
+            this.cryptoData = null;
+
+            try {
+                // send request to the fetch crypto data api
+                const response = await axios.post("http://localhost:8000/api/v1/fetchCryptoData/", {
+                    coin: this.cryptoName.toLowerCase(),
+                });
+
+                this.cryptoData = response.data;
+            } catch (err) {
+                this.error = "Failed to fetch data. Please try again."
+            } finally {
+                this.loading = false;
+            }
+        }
+    }
 }
 </script>
