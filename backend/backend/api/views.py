@@ -125,7 +125,7 @@ class FetchCryptoData(APIView):
             coin_data = {
                 "Price": data["market_data"]["current_price"]["usd"],
                 "MarketCap": data["market_data"]["market_cap"]["usd"],
-                "24hVolume": data["market_data"]["total_volume"]["usd"],
+                "Volume24h": data["market_data"]["total_volume"]["usd"],
                 "FDV": data["market_data"]["fully_diluted_valuation"]["usd"],
                 "TotalSupply": data["market_data"]["total_supply"],
                 "MaxSupply": data["market_data"]["max_supply"],
