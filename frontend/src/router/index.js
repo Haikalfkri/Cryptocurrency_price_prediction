@@ -5,7 +5,10 @@ import LoginPage from "@/views/auth/LoginPage.vue";
 import RegisterPage from "@/views/auth/RegisterPage.vue";
 
 import AdminCryptoPage from "@/views/admin/CryptoPage.vue";
+
 import UserCryptoPage from "@/views/user/CryptoPage.vue";
+
+import CryptoDetailPage from "@/views/admin/CryptoDetailPage.vue";
 
 const routes = [
     // auth
@@ -38,7 +41,13 @@ const routes = [
         name: "userCryptoPage",
         component: UserCryptoPage,
         meta: { requiresAuth: true, role: "user" },
-    }
+    },
+
+    {
+        path: "/CryptoDetailPage",
+        name: "CryptoDetailpage",
+        component: CryptoDetailPage,
+    },
 ]
 
 const router = createRouter({
