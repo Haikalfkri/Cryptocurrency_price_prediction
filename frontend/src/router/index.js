@@ -14,7 +14,23 @@ const routes = [
     // auth
     {
         path: "/",
-        component: LoginPage
+        component: LoginPage,
+        beforeEnter: (to, from, next) => {
+            const token = localStorage.getItem('accessToken');
+            const role = localStorage.getItem('role');
+
+            if(token) {
+                if (role == 'user') {
+                    next('/user/cryptoPage');
+                } else if (role == 'admin') {
+                    next('/admin/cryptoPage');
+                } else {
+                    next('/');
+                }
+            } else {
+                next();
+            }
+        }
     },
     {
         path: "/login",
