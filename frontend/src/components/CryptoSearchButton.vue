@@ -41,7 +41,8 @@ export default {
                 const response = await axios.post("http://localhost:8000/api/v1/fetchCryptoData/", {
                     coin: this.cryptoName.toLowerCase(),
                 });
-
+                
+                localStorage.setItem("coin", this.cryptoName.toLowerCase())
                 // navigate to cryptoDetailPage with the fetched data
                 this.$router.push({
                     path: "/CryptoDetailPage",

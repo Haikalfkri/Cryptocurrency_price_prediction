@@ -14,10 +14,13 @@
             <CardCryptoData :cryptoData="cryptoData" />
         </div>
 
+        <!-- Chart Section -->
+        <CryptoChart :coin="coinName" />
+
         <!-- Description Section -->
         <div class="w-[800px] mt-10 text-left">
-            <h5 class="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white">Description</h5>
-            <p class="text-gray-700 dark:text-gray-400">
+            <h5 class="mb-2 text-md font-bold tracking-tight text-gray-900 dark:text-white">Description</h5>
+            <p class="text-md text-gray-700 dark:text-gray-400">
                 {{ cryptoData?.Description || "No description available." }}
             </p>
         </div>
@@ -26,16 +29,23 @@
 
 <script>
 import CardCryptoData from '@/components/CardCryptoData.vue';
+import CryptoChart from '@/components/CryptoChart.vue';
 
 export default {
     name: "CryptoDetailPage",
     components: {
         CardCryptoData,
+        CryptoChart,
     },
     data() {
         return {
             cryptoData: this.$route.query, // get data from route query
         }
-    }
+    },
+    computed: {
+        coinName() {
+            return localStorage.getItem("coin") || "";
+        }
+    },
 }
 </script>
