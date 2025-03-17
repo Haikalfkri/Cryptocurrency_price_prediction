@@ -11,10 +11,9 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 import requests
-import yfinance as yf
-import plotly.graph_objs as go
+import pandas as pd
+import plotly.graph_objects as go
 import plotly.io as pio
-from datetime import datetime
 
 # Create your views here.
 
@@ -97,46 +96,75 @@ class LogoutView(APIView):
 
 
 # fetch crypto historical api
+
 class FetchCryptoData(APIView):
     def post(self, request):
         try:
-            # Get coin name from request body
             coin = request.data.get("coin")
             if not coin:
                 return Response({"error": "Coin parameter is required"}, status=400)
             
-            # check cache before making an API request
             cache_key = f"crypto_{coin}"
             cached_data = cache.get(cache_key)
-
+            
             if cached_data:
                 return Response(cached_data, status=200)
-
-            # fetch data from coingecko api
+            
             url = f"https://api.coingecko.com/api/v3/coins/{coin}"
             response = requests.get(url)
-
             if response.status_code != 200:
                 return Response({"error": "Failed to fetch data from API"}, status=response.status_code)
             
             data = response.json()
-
-            # extract data
             coin_data = {
                 "Price": data["market_data"]["current_price"]["usd"],
                 "MarketCap": data["market_data"]["market_cap"]["usd"],
                 "Volume24h": data["market_data"]["total_volume"]["usd"],
-                "FDV": data["market_data"]["fully_diluted_valuation"]["usd"],
-                "TotalSupply": data["market_data"]["total_supply"],
-                "MaxSupply": data["market_data"]["max_supply"],
-                "CirculatingSupply": data["market_data"]["circulating_supply"],
-                "MarketCapChangePercentage": data["market_data"]["market_cap_change_percentage_24h"],
-                "Description": data["description"]["en"],
+                "FDV": data["market_data"].get("fully_diluted_valuation", {}).get("usd"),
+                "TotalSupply": data["market_data"].get("total_supply"),
+                "MaxSupply": data["market_data"].get("max_supply"),
+                "CirculatingSupply": data["market_data"].get("circulating_supply"),
+                "MarketCapChangePercentage": data["market_data"].get("market_cap_change_percentage_24h"),
+                "Description": data["description"].get("en", "")
             }
-
-            # cache data for 10 minutes
+            
             cache.set(cache_key, coin_data, timeout=600)
-
             return Response(coin_data, status=200)
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
+        
+# fetch historical data for chart        
+class FetchCryptoChart(APIView):
+    def post(self, request):
+        try:
+            coin = request.data.get("coin")
+            period = request.data.get("period", "week")
+
+            if not coin:
+                return Response({"error": "Coin parameter is required"}, status=400)
+
+            period_mapping = {"week": 7, "month": 30, "all": "max"}
+            if period not in period_mapping:
+                return Response({"error": "Invalid period"}, status=400)
+
+            days = period_mapping[period]
+            cache_key_chart = f"crypto_history_{coin}_{days}"
+            cached_chart = cache.get(cache_key_chart)
+
+            if cached_chart:
+                return Response({"chart": cached_chart}, status=200)
+
+            url_history = f"https://api.coingecko.com/api/v3/coins/{coin}/market_chart?vs_currency=usd&days={days}&interval=daily"
+            response = requests.get(url_history)
+            if response.status_code != 200:
+                return Response({"error": "Failed to fetch historical data from API"}, status=response.status_code)
+
+            data = response.json()
+            prices = data.get("prices", [])
+            if not prices:
+                return Response({"error": "No historical data available"}, status=404)
+
+            cache.set(cache_key_chart, prices, timeout=600)
+            return Response({"chart": prices}, status=200)
         except Exception as e:
             return Response({"error": str(e)}, status=500)
