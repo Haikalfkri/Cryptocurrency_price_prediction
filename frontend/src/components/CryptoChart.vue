@@ -3,7 +3,7 @@
         <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Price Chart</h2>
 
         <!-- Period Selection -->
-        <div class="mb-4 flex gap-2">
+        <div class="mb-4 flex gap-2 justify-end">
             <button v-for="option in periodOptions" :key="option.value"
                 @click="selectedPeriod = option.value"
                 :class="['px-4 py-2 text-sm rounded-md',
@@ -47,7 +47,7 @@ export default defineComponent({
         const periodOptions = [
             { label: "7D", value: "week" },
             { label: "1M", value: "month" },
-            { label: "All Time", value: "max" },
+            // { label: "All Time", value: "max" },
         ];
 
         const chartOptions = {

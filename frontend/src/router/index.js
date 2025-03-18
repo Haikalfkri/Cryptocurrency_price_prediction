@@ -5,6 +5,7 @@ import LoginPage from "@/views/auth/LoginPage.vue";
 import RegisterPage from "@/views/auth/RegisterPage.vue";
 
 import AdminCryptoPage from "@/views/admin/CryptoPage.vue";
+import AdminPredictPage from "@/views/admin/PredictPage.vue";
 
 import UserCryptoPage from "@/views/user/CryptoPage.vue";
 
@@ -49,6 +50,12 @@ const routes = [
         name: "adminCryptoPage",
         component: AdminCryptoPage,
         meta: { requiresAuth: true, role: "admin" },
+    },
+    {
+        path: "/admin/predictPage",
+        name: "adminPredictPage",
+        component: AdminPredictPage,
+        meta: { requiresAuth: true, role: "admin" }
     },
 
     // user 
