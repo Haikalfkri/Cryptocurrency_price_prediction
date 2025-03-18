@@ -9,9 +9,8 @@
                         Prediction</span>
                 </a>
                 <ul class="hidden md:flex space-x-6 text-sm font-medium">
-                    <li><a href="#" class="text-gray-900 dark:text-white hover:text-blue-700">Home</a></li>
                     <li><a href="#" class="text-gray-900 dark:text-white hover:text-blue-700">Crypto</a></li>
-                    <li><a href="#" class="text-gray-900 dark:text-white hover:text-blue-700">Predict</a></li>
+                    <li><router-link :to="predictPageRoute" class="text-gray-900 dark:text-white hover:text-blue-700">Predict</router-link></li>
                     <li v-if="role === 'admin'"><a href="#"
                             class="text-gray-900 dark:text-white hover:text-blue-700">User Management</a></li>
                     <li v-if="role === 'admin'"><a href="#"
@@ -61,9 +60,10 @@
         <!-- Mobile Menu -->
         <div v-show="isMobileMenuOpen" class="md:hidden px-4 pb-4">
             <ul class="space-y-2 text-sm font-medium">
-                <li><a href="#" class="block text-gray-900 dark:text-white hover:text-blue-700">Home</a></li>
-                <li><a href="#" class="block text-gray-900 dark:text-white hover:text-blue-700">Crypto</a></li>
-                <li><a href="#" class="block text-gray-900 dark:text-white hover:text-blue-700">Predict</a></li>
+                <li><router-link to="/cryptoPage"
+                        class="block text-gray-900 dark:text-white hover:text-blue-700">Crypto</router-link></li>
+                <li><router-link :to="predictPageRoute"
+                        class="block text-gray-900 dark:text-white hover:text-blue-700">Predict</router-link></li>
                 <li v-if="role === 'admin'"><a href="#"
                         class="block text-gray-900 dark:text-white hover:text-blue-700">User Management</a></li>
                 <li v-if="role === 'admin'"><a href="#"
@@ -135,6 +135,12 @@ export default {
     beforeUnmount() {
         // Clean up event listener
         document.removeEventListener('click', this.closeDropdown);
+    },
+    computed: {
+        predictPageRoute() {
+            const userRole = localStorage.getItem('role'); // Assuming role is stored in Vuex
+            return userRole === 'admin' ? '/admin/predictPage' : '/user/predictPage';
+        }
     }
 };
 </script>
