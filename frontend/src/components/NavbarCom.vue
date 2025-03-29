@@ -10,7 +10,7 @@
                 </a>
                 <ul class="hidden md:flex space-x-6 text-sm font-medium">
                     <li><router-link :to="cryptoPageRoute" class="text-gray-900 hover:text-blue-700">Crypto</router-link></li>
-                    <li><router-link :to="predictPageRoute" class="text-gray-900 hover:text-blue-700">Predict</router-link></li>
+                    <li><router-link to="/predictPage" class="text-gray-900 hover:text-blue-700">Predict</router-link></li>
                     <li v-if="role === 'admin'"><a href="#"
                             class="text-gray-900 hover:text-blue-700">User Management</a></li>
                     <li v-if="role === 'admin'"><a href="#"
@@ -62,7 +62,7 @@
             <ul class="space-y-2 text-sm font-medium">
                 <li><router-link to="/cryptoPage"
                         class="block text-gray-900 hover:text-blue-700">Crypto</router-link></li>
-                <li><router-link :to="predictPageRoute"
+                <li><router-link to="/predictPage"
                         class="block text-gray-900 hover:text-blue-700">Predict</router-link></li>
                 <li v-if="role === 'admin'"><a href="#"
                         class="block text-gray-900 hover:text-blue-700">User Management</a></li>
@@ -137,10 +137,6 @@ export default {
         document.removeEventListener('click', this.closeDropdown);
     },
     computed: {
-        predictPageRoute() {
-            const userRole = localStorage.getItem('role'); // Assuming role is stored in Vuex
-            return userRole === 'admin' ? '/admin/predictPage' : '/user/predictPage';
-        },
         cryptoPageRoute() {
             const userRole = localStorage.getItem('role'); // Assuming role is stored in Vuex
             return userRole === 'admin' ? '/admin/cryptoPage' : '/user/cryptoPage';
