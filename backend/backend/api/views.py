@@ -12,9 +12,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 import requests
 import pandas as pd
-import plotly.graph_objects as go
-import plotly.io as pio
-
+import numpy as np
+import yfinance as yf
 # Create your views here.
 
 # Authentications
@@ -168,3 +167,5 @@ class FetchCryptoChart(APIView):
             return Response({"chart": prices}, status=200)
         except Exception as e:
             return Response({"error": str(e)}, status=500)
+
+
