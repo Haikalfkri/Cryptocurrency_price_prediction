@@ -1,23 +1,23 @@
 <template>
     <div class="w-full max-w-3xl mt-6">
-        <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Price Chart</h2>
+        <h2 class="text-lg font-bold text-gray-900">Price Chart</h2>
 
         <!-- Period Selection -->
         <div class="mb-4 flex gap-2 justify-end">
             <button v-for="option in periodOptions" :key="option.value"
                 @click="selectedPeriod = option.value"
-                :class="['px-4 py-2 text-sm rounded-md',
-                    selectedPeriod === option.value ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 dark:text-white']">
+                :class="['px-4 py-2 text-md rounded-md',
+                    selectedPeriod === option.value ? 'bg-blue-600 text-white' : 'bg-gray-200']">
                 {{ option.label }}
             </button>
         </div>
 
         <!-- Chart Loading & Error -->
-        <div v-if="loading" class="text-gray-600 dark:text-gray-400">Loading chart...</div>
+        <div v-if="loading" class="text-gray-600">Loading chart...</div>
         <div v-else-if="error" class="text-red-500">{{ error }}</div>
 
         <!-- Chart -->
-        <div v-else class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+        <div v-else class="bg-white p-4 rounded-lg shadow-md">
             <LineChart v-if="chartData" :chart-data="chartData" :chart-options="chartOptions" />
         </div>
     </div>

@@ -3,7 +3,7 @@
         <label for="voice-search" class="sr-only">Search</label>
         <div class="relative w-full">
             <input v-model="cryptoName" type="text" id="crypto-search"
-                class="border border-gray-300 text-gray-900 text-sm rounded-2xl focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                class="border border-gray-300 text-gray-900 text-sm rounded-2xl focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 placeholder="Search Crypto e.g bitcoin" required />
         </div>
         <button type="submit"
@@ -41,7 +41,7 @@ export default {
                 const response = await axios.post("http://localhost:8000/api/v1/fetchCryptoData/", {
                     coin: this.cryptoName.toLowerCase(),
                 });
-                
+
                 localStorage.setItem("coin", this.cryptoName.toLowerCase())
                 // navigate to cryptoDetailPage with the fetched data
                 this.$router.push({

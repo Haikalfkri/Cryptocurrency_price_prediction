@@ -1,20 +1,20 @@
 <template>
-    <nav class="bg-white border-gray-200 shadow-md dark:bg-gray-900">
+    <nav class="bg-white border-gray-200 shadow-md">
         <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
             <!-- Left Section: Title and Links -->
             <div class="flex items-center space-x-6">
                 <a href="#" class="flex items-center space-x-3">
                     <img src="https://flowbite.com/docs/images/logo.svg" class="h-8" alt="Logo" />
-                    <span class="hidden md:inline text-lg font-semibold dark:text-white">Cryptocurrency Price
+                    <span class="hidden md:inline text-lg font-semibold">Cryptocurrency Price
                         Prediction</span>
                 </a>
                 <ul class="hidden md:flex space-x-6 text-sm font-medium">
-                    <li><a href="#" class="text-gray-900 dark:text-white hover:text-blue-700">Crypto</a></li>
-                    <li><router-link :to="predictPageRoute" class="text-gray-900 dark:text-white hover:text-blue-700">Predict</router-link></li>
+                    <li><router-link :to="cryptoPageRoute" class="text-gray-900 hover:text-blue-700">Crypto</router-link></li>
+                    <li><router-link :to="predictPageRoute" class="text-gray-900 hover:text-blue-700">Predict</router-link></li>
                     <li v-if="role === 'admin'"><a href="#"
-                            class="text-gray-900 dark:text-white hover:text-blue-700">User Management</a></li>
+                            class="text-gray-900 hover:text-blue-700">User Management</a></li>
                     <li v-if="role === 'admin'"><a href="#"
-                            class="text-gray-900 dark:text-white hover:text-blue-700">Feedbacks</a></li>
+                            class="text-gray-900 hover:text-blue-700">Feedbacks</a></li>
                 </ul>
             </div>
 
@@ -30,15 +30,15 @@
                             alt="user photo">
                     </button>
                     <div v-show="isDropdownOpen"
-                        class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-md dark:bg-gray-700">
+                        class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-md">
                         <div class="px-4 py-3">
-                            <span class="block text-sm text-gray-900 dark:text-white">{{ username }}</span>
-                            <span class="block text-sm text-gray-500 dark:text-gray-400">{{ email }}</span>
+                            <span class="block text-sm text-gray-900">{{ username }}</span>
+                            <span class="block text-sm text-gray-900">{{ email }}</span>
                         </div>
                         <ul class="py-2">
                             <li>
                                 <a @click.prevent="handleLogout" href="#"
-                                    class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600">Logout</a>
+                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600">Logout</a>
                             </li>
                         </ul>
                     </div>
@@ -61,13 +61,13 @@
         <div v-show="isMobileMenuOpen" class="md:hidden px-4 pb-4">
             <ul class="space-y-2 text-sm font-medium">
                 <li><router-link to="/cryptoPage"
-                        class="block text-gray-900 dark:text-white hover:text-blue-700">Crypto</router-link></li>
+                        class="block text-gray-900 hover:text-blue-700">Crypto</router-link></li>
                 <li><router-link :to="predictPageRoute"
-                        class="block text-gray-900 dark:text-white hover:text-blue-700">Predict</router-link></li>
+                        class="block text-gray-900 hover:text-blue-700">Predict</router-link></li>
                 <li v-if="role === 'admin'"><a href="#"
-                        class="block text-gray-900 dark:text-white hover:text-blue-700">User Management</a></li>
+                        class="block text-gray-900 hover:text-blue-700">User Management</a></li>
                 <li v-if="role === 'admin'"><a href="#"
-                        class="block text-gray-900 dark:text-white hover:text-blue-700">Feedbacks</a></li>
+                        class="block text-gray-900 hover:text-blue-700">Feedbacks</a></li>
             </ul>
         </div>
     </nav>
@@ -108,7 +108,7 @@ export default {
 
                 // redirect to login page
                 this.$router.push("/login").then(() => {
-                    window.location.reload();  // 🔥 Ensures full refresh and reactivity
+                    window.location.reload();  // Ensures full refresh and reactivity
                 });
             } catch (error) {
                 console.log("Logout failed")
@@ -140,6 +140,10 @@ export default {
         predictPageRoute() {
             const userRole = localStorage.getItem('role'); // Assuming role is stored in Vuex
             return userRole === 'admin' ? '/admin/predictPage' : '/user/predictPage';
+        },
+        cryptoPageRoute() {
+            const userRole = localStorage.getItem('role'); // Assuming role is stored in Vuex
+            return userRole === 'admin' ? '/admin/cryptoPage' : '/user/cryptoPage';
         }
     }
 };

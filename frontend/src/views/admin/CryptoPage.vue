@@ -1,7 +1,7 @@
 <template>
-    <Navbar class="fixed top-0 left-0 w-full bg-white shadow-md z-50" />
+    <Navbar class="top-0 left-0 w-full bg-white shadow-md z-50" />
 
-    <div class="mt-[100px]">
+    <div class="mt-6">
         <CryptoSearchButton />
     </div>
 </template>
