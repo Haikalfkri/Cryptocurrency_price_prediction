@@ -29,24 +29,6 @@
         </button>
     </form>
 
-    <!-- Display Charts -->
-    <div v-if="originalPlot" class="flex flex-col items-center space-y-8">
-        <div class="chart-container">
-            <h2 class="text-xl font-bold mt-4 text-center">Original Price Chart</h2>
-            <img :src="originalPlot" alt="Original Chart" class="chart-image" />
-        </div>
-
-        <div class="chart-container">
-            <h2 class="text-xl font-bold mt-4 text-center">Predicted Price Chart</h2>
-            <img :src="predictedPlot" alt="Predicted Chart" class="chart-image" />
-        </div>
-
-        <div class="chart-container">
-            <h2 class="text-xl font-bold mt-4 text-center">Future Predictions</h2>
-            <img :src="futurePlot" alt="Future Predictions" class="chart-image" />
-        </div>
-    </div>
-
 
 </template>
 
@@ -59,9 +41,6 @@ export default {
         return {
             coin: '',
             days: 7,
-            originalPlot: "",  // Store base64 chart
-            predictedPlot: "",
-            futurePlot: "",
             loading: false,
             error: null
         };
@@ -82,9 +61,11 @@ export default {
 
                 console.log("Response:", response.data);  // Debugging
 
-                this.originalPlot = response.data.original_plot;
-                this.predictedPlot = response.data.predicted_plot;
-                this.futurePlot = response.data.future_plot;
+                localStorage.setItem("originalPlot", response.data.original_plot);
+                localStorage.setItem("predictedPlot", response.data.predicted_plot);
+                localStorage.setItem("futurePlot", response.data.future_plot);
+
+                this.$router.push("/cryptoPredictionPage");
             } catch (err) {
                 console.error("Fetch error:", err);
                 this.error = "Failed to fetch data. Please try again.";

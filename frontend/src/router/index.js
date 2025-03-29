@@ -5,11 +5,12 @@ import LoginPage from "@/views/auth/LoginPage.vue";
 import RegisterPage from "@/views/auth/RegisterPage.vue";
 
 import AdminCryptoPage from "@/views/admin/CryptoPage.vue";
-import AdminPredictPage from "@/views/admin/PredictPage.vue";
+import PredictPage from "@/components/PredictPage.vue";
 
 import UserCryptoPage from "@/views/user/CryptoPage.vue";
 
 import CryptoDetailPage from "@/views/admin/CryptoDetailPage.vue";
+import CryptoPredictionPage from "@/views/admin/CryptoPredictionPage.vue";
 
 const routes = [
     // auth
@@ -51,14 +52,8 @@ const routes = [
         component: AdminCryptoPage,
         meta: { requiresAuth: true, role: "admin" },
     },
-    {
-        path: "/admin/predictPage",
-        name: "adminPredictPage",
-        component: AdminPredictPage,
-        meta: { requiresAuth: true, role: "admin" }
-    },
 
-    // user 
+    // user
     {
         path: "/user/cryptoPage",
         name: "userCryptoPage",
@@ -70,7 +65,22 @@ const routes = [
         path: "/CryptoDetailPage",
         name: "CryptoDetailpage",
         component: CryptoDetailPage,
+        meta: { requiresAuth: true },
     },
+
+    {
+        path: "/predictPage",
+        name: "PredictPage",
+        component: PredictPage,
+        meta: { requiresAuth: true }
+    },
+
+    {
+        path: "/CryptoPredictionPage",
+        name: "CryptoPredictionPage",
+        component: CryptoPredictionPage,
+        meta: { requiresAuth: true },
+    }
 ]
 
 const router = createRouter({
