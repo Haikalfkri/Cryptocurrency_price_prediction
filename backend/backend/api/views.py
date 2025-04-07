@@ -1,28 +1,32 @@
+import json
+from datetime import timedelta, datetime
+import base64
+import io
+import matplotlib.pyplot as plt
+import matplotlib
+from sklearn.preprocessing import MinMaxScaler
+from tensorflow.keras.models import load_model
+import yfinance as yf
+import numpy as np
+import pandas as pd
+import requests
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
+from .serializers import LoginSerializer, RegisterSerializer
 from django.shortcuts import render
 from django.contrib.auth import authenticate
 from django.core.cache import cache
 
+from openai import OpenAI
 import os
+from dotenv import load_dotenv
 
-from .serializers import LoginSerializer, RegisterSerializer
+load_dotenv()
 
-from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework_simplejwt.tokens import RefreshToken
 
-import requests
-import pandas as pd
-import numpy as np
-import yfinance as yf
-from tensorflow.keras.models import load_model
-from sklearn.preprocessing import MinMaxScaler
-import matplotlib
-import matplotlib.pyplot as plt
-import io
-import base64
-from datetime import datetime
 # Create your views here.
 
 matplotlib.use('Agg')
@@ -200,11 +204,62 @@ def plot_to_base64(fig):
     return f"data:image/png;base64,{data}"
 
 
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+client = OpenAI()
+
+
+def get_sentiment_analysis(coin, no_of_days):
+
+    prompt = f"""
+        You're a crypto market expert and financial analyst. For each of the next {no_of_days} days,
+        give a sentiment analysis of {coin} using market trends, social media buzz, and general financial  behavior. For each day, give:
+        1. date
+        2. sentiment: positive / neutral / negative
+        3. score: from -1 (very negative) to 1 (very positive)
+        4. suggested action: buy / hold / sell
+        5. short summary (max 50 words)
+
+        Format the result as a Python list of dictionaries like this:
+        [
+        {{
+            "date": "YYYY-MM-DD",
+            "sentiment": "Positive",
+            "score": 0.6,
+            "action": "Buy",
+            "summary": "Optimism around ETF approval drives price"
+        }},
+        ...
+        ]
+    """
+
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "user", "content": prompt}
+        ]
+    )
+
+    content = response.choices[0].message.content
+    try:
+        sentiment_data = json.loads(content)
+    except json.JSONDecodeError:
+        sentiment_data = [{"error": "Failed to parse OpenAI response as JSON"}]
+
+    return sentiment_data
+
+
 class fetchCryptoPrediction(APIView):
     def post(self, request):
         try:
             coin = request.data.get("coin")
             no_of_days = request.data.get("no_of_days", 7)
+
+            # cache key
+            cache_key = f"{coin}_{no_of_days}_prediction"
+            cached_data = cache.get(cache_key)
+
+            if cached_data:
+                return Response(cached_data, status=200)
 
             # fetch crypto data
             end = datetime.now()
@@ -254,8 +309,10 @@ class fetchCryptoPrediction(APIView):
 
             # plot 2: Original vs Predicted Data
             fig2 = plt.figure(figsize=(15, 6))
-            plt.plot(plotting_data['Original Test Data'], label='Original Test Data', color= 'blue', linewidth=2)
-            plt.plot(plotting_data['Predicted Test Data'], label='Predicted Test Data', color= 'red', linewidth=2)
+            plt.plot(plotting_data['Original Test Data'],
+                     label='Original Test Data', color='blue', linewidth=2)
+            plt.plot(plotting_data['Predicted Test Data'],
+                     label='Predicted Test Data', color='red', linewidth=2)
             plt.legend()
             plt.title('Original vs Predicted Test Data')
             plt.xlabel('Date')
@@ -272,12 +329,14 @@ class fetchCryptoPrediction(APIView):
             for _ in range(no_of_days):
                 next_day = model.predict(last_100_scaled)
                 future_predictions.append(scaler.inverse_transform(next_day))
-                last_100_scaled = np.append(last_100_scaled[:, 1:, :], next_day.reshape(1, 1, -1), axis=1)
+                last_100_scaled = np.append(
+                    last_100_scaled[:, 1:, :], next_day.reshape(1, 1, -1), axis=1)
 
             future_predictions = np.array(future_predictions).flatten()
 
             fig3 = plt.figure(figsize=(15, 6))
-            plt.plot(range(1, no_of_days + 1), future_predictions, marker='o', color='red', label='Future Predictions')
+            plt.plot(range(1, no_of_days + 1), future_predictions,
+                     marker='o', color='red', label='Future Predictions')
             plt.title('Future Close Price Predictions')
             plt.xlabel('Days Ahead')
             plt.ylabel('Predicted Close Price')
@@ -286,11 +345,20 @@ class fetchCryptoPrediction(APIView):
             future_plot = plot_to_base64(fig3)
             plt.close(fig3)
 
-            return Response({
+            result = {
                 "original_plot": original_plot,
                 "predicted_plot": predicted_plot,
                 "future_plot": future_plot,
-            }, status=200)
+            }
+
+            # sentiment analysis
+            sentiment_data = get_sentiment_analysis(coin, no_of_days)
+            result["sentiment_analysis"] = sentiment_data
+
+            # cache the result
+            cache.set(cache_key, result, timeout=60 * 60)
+
+            return Response(result, status=200)
 
         except Exception as e:
             return Response({"error": str(e)}, status=500)
