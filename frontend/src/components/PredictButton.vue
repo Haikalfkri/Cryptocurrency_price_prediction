@@ -12,6 +12,7 @@
         <!-- Dropdown -->
         <select v-model="days" id="days-filter" class="border border-gray-300 text-gray-900 text-sm rounded-2xl focus:ring-blue-500 focus:border-blue-500
         p-2.5 dark:focus:ring-blue-500 dark:focus:border-blue-500">
+            <option :value="2">2 Days</option>
             <option :value="7">7 Days</option>
             <option :value="14">14 Days</option>
         </select>
@@ -40,7 +41,7 @@ export default {
     data() {
         return {
             coin: '',
-            days: 7,
+            days: 2,
             loading: false,
             error: null
         };

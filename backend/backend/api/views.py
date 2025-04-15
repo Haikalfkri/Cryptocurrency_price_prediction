@@ -208,51 +208,71 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 client = OpenAI()
 
 
-def get_sentiment_analysis(coin, no_of_days):
+from datetime import datetime, timedelta
+import json
+from openai import OpenAI  # adjust this import based on your OpenAI library version
+
+client = OpenAI()  # initialize your OpenAI client here
+
+def price_prediction_analysis(coin, future_predictions):
+    today = datetime.today()
+
+    date_price_pairs = [
+        {
+            "date": (today + timedelta(days=i)).strftime('%Y-%m-%d'),
+            "price": float(round(price, 2))
+        }
+        for i, price in enumerate(future_predictions)
+    ]
+
+    data_text = json.dumps(date_price_pairs, indent=2)
 
     prompt = f"""
-        You're a crypto market expert and financial analyst. For each of the next {no_of_days} days,
-        give a sentiment analysis of {coin} using market trends, social media buzz, and general financial  behavior. For each day, give:
-        1. date
-        2. sentiment: positive / neutral / negative
-        3. score: from -1 (very negative) to 1 (very positive)
-        4. suggested action: buy / hold / sell
-        5. short summary (max 50 words)
+    You are an expert financial analyst.
 
-        Format the result as a Python list of dictionaries like this:
-        [
-        {{
-            "date": "YYYY-MM-DD",
-            "sentiment": "Positive",
-            "score": 0.6,
-            "action": "Buy",
-            "summary": "Optimism around ETF approval drives price"
-        }},
-        ...
-        ]
+    Based on the following predicted prices for {coin}, provide an expert analysis for each day.
+    For each prediction, give:
+    - "date": the date of the prediction
+    - "predicted_price": the predicted price (as given)
+    - "trend": one of "Uptrend", "Downtrend", or "Sideways"
+    - "action": one of "Buy", "Hold", or "Sell"
+    - "reason": a short explanation why the model might be predicting this price based on recent trends, past data, or momentum (50-100 words)
+
+     At the end, return a final item:
+    {{
+        "prediction_summary": "Summarize all predictions and give general advice."
+    }}
+
+    Use only the following predicted prices:
+    {data_text}
+
+    Return the result as a valid JSON array. Do not include markdown or explanation.
     """
 
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
-        messages=[
-            {"role": "user", "content": prompt}
-        ]
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.7
     )
 
     content = response.choices[0].message.content
+
     try:
-        sentiment_data = json.loads(content)
+        prediction_analysis = json.loads(content)
     except json.JSONDecodeError:
-        sentiment_data = [{"error": "Failed to parse OpenAI response as JSON"}]
+        prediction_analysis = [{"error": "Failed to parse OpenAI response as JSON"}]
 
-    return sentiment_data
+    return prediction_analysis
 
+
+def sentiment_analysis(coin, no_of_days):
+    today = datetime.today()
 
 class fetchCryptoPrediction(APIView):
     def post(self, request):
         try:
             coin = request.data.get("coin")
-            no_of_days = request.data.get("no_of_days", 7)
+            no_of_days = request.data.get("no_of_days", 2)
 
             # cache key
             cache_key = f"{coin}_{no_of_days}_prediction"
@@ -348,11 +368,11 @@ class fetchCryptoPrediction(APIView):
             result = {
                 "original_plot": original_plot,
                 "predicted_plot": predicted_plot,
-                "future_plot": future_plot,
+                "future_plot": future_predictions,
             }
 
             # sentiment analysis
-            sentiment_data = get_sentiment_analysis(coin, no_of_days)
+            sentiment_data = price_prediction_analysis(coin, future_predictions)
             result["sentiment_analysis"] = sentiment_data
 
             # cache the result
