@@ -354,16 +354,16 @@ class fetchCryptoPrediction(APIView):
 
             future_predictions = np.array(future_predictions).flatten()
 
-            fig3 = plt.figure(figsize=(15, 6))
-            plt.plot(range(1, no_of_days + 1), future_predictions,
-                     marker='o', color='red', label='Future Predictions')
-            plt.title('Future Close Price Predictions')
-            plt.xlabel('Days Ahead')
-            plt.ylabel('Predicted Close Price')
-            plt.grid(alpha=0.3)
-            plt.legend()
-            future_plot = plot_to_base64(fig3)
-            plt.close(fig3)
+            # fig3 = plt.figure(figsize=(15, 6))
+            # plt.plot(range(1, no_of_days + 1), future_predictions,
+            #          marker='o', color='red', label='Future Predictions')
+            # plt.title('Future Close Price Predictions')
+            # plt.xlabel('Days Ahead')
+            # plt.ylabel('Predicted Close Price')
+            # plt.grid(alpha=0.3)
+            # plt.legend()
+            # future_plot = plot_to_base64(fig3)
+            # plt.close(fig3)
 
             result = {
                 "original_plot": original_plot,
@@ -373,7 +373,7 @@ class fetchCryptoPrediction(APIView):
 
             # sentiment analysis
             sentiment_data = price_prediction_analysis(coin, future_predictions)
-            result["sentiment_analysis"] = sentiment_data
+            result["predict_price_analysis"] = sentiment_data
 
             # cache the result
             cache.set(cache_key, result, timeout=60 * 60)

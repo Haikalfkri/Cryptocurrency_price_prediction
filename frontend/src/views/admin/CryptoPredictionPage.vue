@@ -66,8 +66,4 @@ export default {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     transition: transform 0.3s ease-in-out;
 }
-
-.chart-image:hover {
-    transform: scale(1.1);
-}
 </style>
