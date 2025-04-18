@@ -4,7 +4,6 @@
             <!-- Left Section: Title and Links -->
             <div class="flex items-center space-x-6">
                 <a href="#" class="flex items-center space-x-3">
-                    <img src="https://flowbite.com/docs/images/logo.svg" class="h-8" alt="Logo" />
                     <span class="hidden md:inline text-lg font-semibold">Cryptocurrency Price
                         Prediction</span>
                 </a>
@@ -38,7 +37,7 @@
                         <ul class="py-2">
                             <li>
                                 <a @click.prevent="handleLogout" href="#"
-                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600">Logout</a>
+                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</a>
                             </li>
                         </ul>
                     </div>

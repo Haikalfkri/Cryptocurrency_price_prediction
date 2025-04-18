@@ -1,26 +1,29 @@
 <template>
     <div class="flex flex-col items-center justify-center relative mb-10 px-4">
         <!-- Back Button -->
-        <button @click="$router.push('/predictPage')" class="absolute left-4 sm:left-6 md:left-10 top-0 mt-16 sm:mt-20 p-2">
-            <svg class="w-6 h-6 text-gray-800" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5H1m0 0 4 4M1 5l4-4" />
+        <button @click="$router.push('/predictPage')"
+            class="absolute left-4 sm:left-6 md:left-10 top-0 mt-16 sm:mt-20 p-2">
+            <svg class="w-6 h-6 text-gray-800" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                viewBox="0 0 14 10">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M13 5H1m0 0 4 4M1 5l4-4" />
             </svg>
         </button>
 
         <!-- Chart Section -->
         <div v-if="originalPlot" class="flex flex-col items-center space-y-6 mt-10">
             <div class="chart-container">
-                <h2 class="text-xl font-bold">Original Price Chart</h2>
+                <h2 class="text-xl font-bold mb-5">Original Price Chart</h2>
                 <img :src="originalPlot" alt="Original Chart" class="chart-image" />
             </div>
 
             <div class="chart-container">
-                <h2 class="text-xl font-bold">Predicted Price Chart</h2>
+                <h2 class="text-xl font-bold mb-5">Predicted Price Chart</h2>
                 <img :src="predictedPlot" alt="Predicted Chart" class="chart-image" />
             </div>
 
             <div class="chart-container">
-                <h2 class="text-xl font-bold">Future Predictions</h2>
+                <h2 class="text-xl font-bold mb-5">Future Predictions</h2>
                 <img :src="futurePlot" alt="Future Predictions" class="chart-image" />
             </div>
         </div>
@@ -34,8 +37,11 @@ export default {
         return {
             originalPlot: null,
             predictedPlot: null,
-            futurePlot: null
+            futurePlot: null,
+            sentimentAnalysis: []
         };
+    },
+    methods: {
     },
     mounted() {
         // Load from route query or localStorage
@@ -59,9 +65,5 @@ export default {
     border-radius: 12px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     transition: transform 0.3s ease-in-out;
-}
-
-.chart-image:hover {
-    transform: scale(1.1);
 }
 </style>

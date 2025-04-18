@@ -1,28 +1,32 @@
+import json
+from datetime import timedelta, datetime
+import base64
+import io
+import matplotlib.pyplot as plt
+import matplotlib
+from sklearn.preprocessing import MinMaxScaler
+from tensorflow.keras.models import load_model
+import yfinance as yf
+import numpy as np
+import pandas as pd
+import requests
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
+from .serializers import LoginSerializer, RegisterSerializer
 from django.shortcuts import render
 from django.contrib.auth import authenticate
 from django.core.cache import cache
 
+from openai import OpenAI
 import os
+from dotenv import load_dotenv
 
-from .serializers import LoginSerializer, RegisterSerializer
+load_dotenv()
 
-from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework_simplejwt.tokens import RefreshToken
 
-import requests
-import pandas as pd
-import numpy as np
-import yfinance as yf
-from tensorflow.keras.models import load_model
-from sklearn.preprocessing import MinMaxScaler
-import matplotlib
-import matplotlib.pyplot as plt
-import io
-import base64
-from datetime import datetime
 # Create your views here.
 
 matplotlib.use('Agg')
@@ -200,11 +204,82 @@ def plot_to_base64(fig):
     return f"data:image/png;base64,{data}"
 
 
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+client = OpenAI()
+
+
+from datetime import datetime, timedelta
+import json
+from openai import OpenAI  # adjust this import based on your OpenAI library version
+
+client = OpenAI()  # initialize your OpenAI client here
+
+def price_prediction_analysis(coin, future_predictions):
+    today = datetime.today()
+
+    date_price_pairs = [
+        {
+            "date": (today + timedelta(days=i)).strftime('%Y-%m-%d'),
+            "price": float(round(price, 2))
+        }
+        for i, price in enumerate(future_predictions)
+    ]
+
+    data_text = json.dumps(date_price_pairs, indent=2)
+
+    prompt = f"""
+    You are an expert financial analyst.
+
+    Based on the following predicted prices for {coin}, provide an expert analysis for each day.
+    For each prediction, give:
+    - "date": the date of the prediction
+    - "predicted_price": the predicted price (as given)
+    - "trend": one of "Uptrend", "Downtrend", or "Sideways"
+    - "action": one of "Buy", "Hold", or "Sell"
+    - "reason": a short explanation why the model might be predicting this price based on recent trends, past data, or momentum (50-100 words)
+
+     At the end, return a final item:
+    {{
+        "prediction_summary": "Summarize all predictions and give general advice."
+    }}
+
+    Use only the following predicted prices:
+    {data_text}
+
+    Return the result as a valid JSON array. Do not include markdown or explanation.
+    """
+
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.7
+    )
+
+    content = response.choices[0].message.content
+
+    try:
+        prediction_analysis = json.loads(content)
+    except json.JSONDecodeError:
+        prediction_analysis = [{"error": "Failed to parse OpenAI response as JSON"}]
+
+    return prediction_analysis
+
+
+def sentiment_analysis(coin, no_of_days):
+    today = datetime.today()
+
 class fetchCryptoPrediction(APIView):
     def post(self, request):
         try:
             coin = request.data.get("coin")
-            no_of_days = request.data.get("no_of_days", 7)
+            no_of_days = request.data.get("no_of_days", 2)
+
+            # cache key
+            cache_key = f"{coin}_{no_of_days}_prediction"
+            cached_data = cache.get(cache_key)
+
+            if cached_data:
+                return Response(cached_data, status=200)
 
             # fetch crypto data
             end = datetime.now()
@@ -254,8 +329,10 @@ class fetchCryptoPrediction(APIView):
 
             # plot 2: Original vs Predicted Data
             fig2 = plt.figure(figsize=(15, 6))
-            plt.plot(plotting_data['Original Test Data'], label='Original Test Data', color= 'blue', linewidth=2)
-            plt.plot(plotting_data['Predicted Test Data'], label='Predicted Test Data', color= 'red', linewidth=2)
+            plt.plot(plotting_data['Original Test Data'],
+                     label='Original Test Data', color='blue', linewidth=2)
+            plt.plot(plotting_data['Predicted Test Data'],
+                     label='Predicted Test Data', color='red', linewidth=2)
             plt.legend()
             plt.title('Original vs Predicted Test Data')
             plt.xlabel('Date')
@@ -272,25 +349,36 @@ class fetchCryptoPrediction(APIView):
             for _ in range(no_of_days):
                 next_day = model.predict(last_100_scaled)
                 future_predictions.append(scaler.inverse_transform(next_day))
-                last_100_scaled = np.append(last_100_scaled[:, 1:, :], next_day.reshape(1, 1, -1), axis=1)
+                last_100_scaled = np.append(
+                    last_100_scaled[:, 1:, :], next_day.reshape(1, 1, -1), axis=1)
 
             future_predictions = np.array(future_predictions).flatten()
 
-            fig3 = plt.figure(figsize=(15, 6))
-            plt.plot(range(1, no_of_days + 1), future_predictions, marker='o', color='red', label='Future Predictions')
-            plt.title('Future Close Price Predictions')
-            plt.xlabel('Days Ahead')
-            plt.ylabel('Predicted Close Price')
-            plt.grid(alpha=0.3)
-            plt.legend()
-            future_plot = plot_to_base64(fig3)
-            plt.close(fig3)
+            # fig3 = plt.figure(figsize=(15, 6))
+            # plt.plot(range(1, no_of_days + 1), future_predictions,
+            #          marker='o', color='red', label='Future Predictions')
+            # plt.title('Future Close Price Predictions')
+            # plt.xlabel('Days Ahead')
+            # plt.ylabel('Predicted Close Price')
+            # plt.grid(alpha=0.3)
+            # plt.legend()
+            # future_plot = plot_to_base64(fig3)
+            # plt.close(fig3)
 
-            return Response({
+            result = {
                 "original_plot": original_plot,
                 "predicted_plot": predicted_plot,
-                "future_plot": future_plot,
-            }, status=200)
+                "future_plot": future_predictions,
+            }
+
+            # sentiment analysis
+            sentiment_data = price_prediction_analysis(coin, future_predictions)
+            result["predict_price_analysis"] = sentiment_data
+
+            # cache the result
+            cache.set(cache_key, result, timeout=60 * 60)
+
+            return Response(result, status=200)
 
         except Exception as e:
             return Response({"error": str(e)}, status=500)
