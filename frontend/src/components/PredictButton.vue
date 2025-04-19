@@ -62,9 +62,7 @@ export default {
 
                 console.log("Response:", response.data);  // Debugging
 
-                localStorage.setItem("originalPlot", response.data.original_plot);
-                localStorage.setItem("predictedPlot", response.data.predicted_plot);
-                localStorage.setItem("futurePlot", response.data.future_plot);
+                localStorage.setItem("predictionResponse", JSON.stringify(response.data));
 
                 this.$router.push("/cryptoPredictionPage");
             } catch (err) {
