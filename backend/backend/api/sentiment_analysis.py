@@ -1,6 +1,8 @@
 import praw
 from newsapi import NewsApiClient
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+from django.core.cache import cache
+import hashlib
 
 from dotenv import load_dotenv
 import os
@@ -105,6 +107,13 @@ def sentiment_and_prediction_analysis(coin, future_predictions):
     - Confidence Score (0-100)
     - Summary of news
     """
+
+    # buat cache
+    cache_key = f"sentiment_{coin}_{hashlib.md5(str(future_predictions).encode()).hexdigest()}"
+    cached_result = cache.get(cache_key)
+    if cached_result:
+        return cached_result
+
     news_data = get_news_data(coin)
     sentiment_label, avg_score = get_sentiment_analysis(news_data)
     summary = summarize_news(news_data, coin)
@@ -124,4 +133,8 @@ def sentiment_and_prediction_analysis(coin, future_predictions):
     price_score = 100 if price_change > 0 else 50
     final_score = round((sentiment_score + price_score) / 2, 2)
 
-    return sentiment_label, recommendation, final_score, summary
+    result = (sentiment_label, recommendation, final_score, summary)
+
+    # simpan cache selama 1 jam
+    cache.set(cache_key, result, timeout=60 * 60)
+    return result

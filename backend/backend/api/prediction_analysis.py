@@ -4,6 +4,9 @@ from openai import OpenAI  # adjust this import based on your OpenAI library ver
 import os
 from dotenv import load_dotenv
 
+from django.core.cache import cache
+import hashlib
+
 load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -11,6 +14,13 @@ client = OpenAI()
 
 def price_prediction_analysis(coin, future_predictions):
     today = datetime.today()
+
+    prediction_hash = hashlib.md5(str(future_predictions).encode()).hexdigest()
+    cache_key = f"price_analysis_{coin}_{prediction_hash}"
+
+    cached_result = cache.get(cache_key)
+    if cached_result:
+        cached_result
 
     date_price_pairs = [
         {
@@ -56,5 +66,8 @@ def price_prediction_analysis(coin, future_predictions):
         prediction_analysis = json.loads(content)
     except json.JSONDecodeError:
         prediction_analysis = [{"error": "Failed to parse OpenAI response as JSON"}]
+
+    # simpan hasil cache selama 1 jam
+    cache.set(cache_key, prediction_analysis, timeout=60 * 60)
 
     return prediction_analysis
