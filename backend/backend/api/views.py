@@ -24,6 +24,9 @@ from openai import OpenAI
 import os
 from dotenv import load_dotenv
 
+from api.prediction_analysis import price_prediction_analysis
+from api.sentiment_analysis import sentiment_and_prediction_analysis
+
 load_dotenv()
 
 
@@ -150,9 +153,6 @@ class FetchCryptoData(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=500)
 
-# fetch historical data for chart
-
-
 class FetchCryptoChart(APIView):
     def post(self, request):
         try:
@@ -204,70 +204,6 @@ def plot_to_base64(fig):
     return f"data:image/png;base64,{data}"
 
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-client = OpenAI()
-
-
-from datetime import datetime, timedelta
-import json
-from openai import OpenAI  # adjust this import based on your OpenAI library version
-
-client = OpenAI()  # initialize your OpenAI client here
-
-def price_prediction_analysis(coin, future_predictions):
-    today = datetime.today()
-
-    date_price_pairs = [
-        {
-            "date": (today + timedelta(days=i)).strftime('%Y-%m-%d'),
-            "price": float(round(price, 2))
-        }
-        for i, price in enumerate(future_predictions)
-    ]
-
-    data_text = json.dumps(date_price_pairs, indent=2)
-
-    prompt = f"""
-    You are an expert financial analyst.
-
-    Based on the following predicted prices for {coin}, provide an expert analysis for each day.
-    For each prediction, give:
-    - "date": the date of the prediction
-    - "predicted_price": the predicted price (as given)
-    - "trend": one of "Uptrend", "Downtrend", or "Sideways"
-    - "action": one of "Buy", "Hold", or "Sell"
-    - "reason": a short explanation why the model might be predicting this price based on recent trends, past data, or momentum (50-100 words)
-
-     At the end, return a final item:
-    {{
-        "prediction_summary": "Summarize all predictions and give general advice."
-    }}
-
-    Use only the following predicted prices:
-    {data_text}
-
-    Return the result as a valid JSON array. Do not include markdown or explanation.
-    """
-
-    response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.7
-    )
-
-    content = response.choices[0].message.content
-
-    try:
-        prediction_analysis = json.loads(content)
-    except json.JSONDecodeError:
-        prediction_analysis = [{"error": "Failed to parse OpenAI response as JSON"}]
-
-    return prediction_analysis
-
-
-def sentiment_analysis(coin, no_of_days):
-    today = datetime.today()
-
 class fetchCryptoPrediction(APIView):
     def post(self, request):
         try:
@@ -314,7 +250,8 @@ class fetchCryptoPrediction(APIView):
             plotting_data = pd.DataFrame({
                 'Original Test Data': inv_y_test.flatten(),
                 'Predicted Test Data': inv_predictions.flatten()
-            }, index=x_test.index[100:])
+            }, index=x_test.index[base_days:])
+
 
             # General Plot
             # Plot 1: Original Closing Prices
@@ -354,26 +291,23 @@ class fetchCryptoPrediction(APIView):
 
             future_predictions = np.array(future_predictions).flatten()
 
-            # fig3 = plt.figure(figsize=(15, 6))
-            # plt.plot(range(1, no_of_days + 1), future_predictions,
-            #          marker='o', color='red', label='Future Predictions')
-            # plt.title('Future Close Price Predictions')
-            # plt.xlabel('Days Ahead')
-            # plt.ylabel('Predicted Close Price')
-            # plt.grid(alpha=0.3)
-            # plt.legend()
-            # future_plot = plot_to_base64(fig3)
-            # plt.close(fig3)
+            # price prediction analysis
+            price_analysis_data = price_prediction_analysis(coin, future_predictions)
+
+            # sentiment analysis
+            sentiment_label, recommendation, final_score, summarize = sentiment_and_prediction_analysis(coin, future_predictions)
 
             result = {
                 "original_plot": original_plot,
                 "predicted_plot": predicted_plot,
                 "future_plot": future_predictions,
+                "predict_price_analysis": price_analysis_data,
+                "sentiment_label": sentiment_label,
+                "recommendation": recommendation,
+                "final_score": final_score,
+                "summarize": summarize,
             }
 
-            # sentiment analysis
-            sentiment_data = price_prediction_analysis(coin, future_predictions)
-            result["predict_price_analysis"] = sentiment_data
 
             # cache the result
             cache.set(cache_key, result, timeout=60 * 60)
