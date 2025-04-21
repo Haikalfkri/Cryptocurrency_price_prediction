@@ -29,51 +29,59 @@ analyzer = SentimentIntensityAnalyzer()
 
 
 def get_news_data(coin):
-    newsapi = NewsApiClient(api_key=os.getenv('NEWS_API_KEY'))
-    all_articles = newsapi.get_everything(q=coin, language='en', sort_by='relevancy', page_size=20)
-    news_data = [article['title'] + " " + article['description'] for article in all_articles['articles']]
-    return news_data
+    """Fetch news articles related to the given coin using NewsAPI."""
+    try:
+        newsapi = NewsApiClient(api_key=os.getenv('NEWS_API_KEY'))
+        all_articles = newsapi.get_everything(
+            q=coin,
+            language='en',
+            sort_by='relevancy',
+            page_size=20
+        )
+        return [
+            article['title'] + " " + (article['description'] or '')
+            for article in all_articles['articles']
+        ]
+    except Exception as e:
+        print(f"Error while fetching news data: {str(e)}")
+        return []
 
 
-# analyze sentiment score
 def analyze_sentiment(texts):
-    sentiment_scores = []
-    for text in texts:
-        sentiment_score = analyzer.polarity_scores(text)
-        sentiment_scores.append(sentiment_score['compound'])
-    return sentiment_scores
+    """Analyze sentiment score of a list of texts."""
+    if not texts:
+        return []
+    return [analyzer.polarity_scores(text)['compound'] for text in texts]
 
 
-# get sentiment analysis
-def get_sentiment_analysis(coin):
-    # reddit_data = get_reddit_data(coin)
-    news_data = get_news_data(coin)
-
-    # combined_data = reddit_data + news_data
+def get_sentiment_analysis(news_data):
+    """Get average sentiment and label from the news data."""
     sentiment_scores = analyze_sentiment(news_data)
+    if not sentiment_scores:
+        return "Neutral", 0.0
 
-    # rata-rata skor sentimen untuk keseluruhan data
-    average_sentiment = sum(sentiment_scores) / len(sentiment_scores) if sentiment_scores else 0
+    avg_score = sum(sentiment_scores) / len(sentiment_scores)
+    if avg_score > 0.1:
+        label = "Positive"
+    elif avg_score < -0.1:
+        label = "Negative"
+    else:
+        label = "Neutral"
 
-    # menentukan apakah sentimen secara umum positif, negatif, atau netral
-    sentiment_label = "Neutral"
-    if average_sentiment > 0.1:
-        sentiment_label = "Positive"
-    elif average_sentiment < -0.1:
-        sentiment_label = "Negative"
-
-    return sentiment_label, average_sentiment
+    return label, avg_score
 
 
-# summarize news data using OpenAI
-def summarize_news(coin):
-    news_data = get_news_data(coin)
+def summarize_news(news_data, coin):
+    """Use OpenAI to summarize news data about the given coin."""
+    if not news_data:
+        return "No news data available to summarize."
 
-    prompt = f"""
-        Summarize the following cryptocurrency-related content about {coin} into a concise and informative summary between 100 and 200 words.Highlight the main sentiment, market trends, and signigicant news.
+    news_text = "\n".join(news_data[:20])  # limit to first 5 items to avoid token overflow
+    prompt = (
+        f"Summarize the following cryptocurrency-related news about {coin} into 100-200 words. "
+        f"Highlight the main sentiment, market trends, and significant events:\n\n{news_text}"
+    )
 
-        {news_data}
-    """
     try:
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
@@ -84,30 +92,36 @@ def summarize_news(coin):
             max_tokens=300,
             temperature=0.7,
         )
-        summary = response.choices[0].message.content.strip()
-        return summary
+        return response.choices[0].message.content.strip()
     except Exception as e:
         return f"Error while summarizing: {str(e)}"
 
-
-
 def sentiment_and_prediction_analysis(coin, future_predictions):
-    sentiment_label, average_sentiment = get_sentiment_analysis(coin)
+    """
+    Combine sentiment and future price predictions to give:
+    - Sentiment label (Positive, Negative, Neutral)
+    - Recommendation (Buy, Sell, Hold)
+    - Final Score (0-100)
+    - Confidence Score (0-100)
+    - Summary of news
+    """
+    news_data = get_news_data(coin)
+    sentiment_label, avg_score = get_sentiment_analysis(news_data)
+    summary = summarize_news(news_data, coin)
 
-    summarize = summarize_news(coin)
+    if future_predictions is None or len(future_predictions) < 2:
+        return sentiment_label, "Hold", 50.0, summary
 
+    price_change = future_predictions[-1] - future_predictions[0]
     recommendation = "Hold"
-    if average_sentiment > 0.2 and future_predictions[-1] > future_predictions[0]:
+    if avg_score > 0.2 and price_change > 0:
         recommendation = "Buy"
-    elif average_sentiment < -0.2 and future_predictions[-1] < future_predictions[0]:
+    elif avg_score < -0.2 and price_change < 0:
         recommendation = "Sell"
 
-    # skor akhir 1-100 (sentiment + price prediction)
-    sentiment_score = (average_sentiment + 1) * 50 # Skor sentiment diubah menjadi rentang 0-100
-    price_score = 100 if future_predictions[-1] > future_predictions[0] else 50 # Prediksi harga naik memberi skor lebih
+    # Calculate score
+    sentiment_score = (avg_score + 1) * 50  # Scale compound sentiment (-1 to 1) into 0-100
+    price_score = 100 if price_change > 0 else 50
+    final_score = round((sentiment_score + price_score) / 2, 2)
 
-    final_score = (sentiment_score + price_score) / 2
-
-    print("news_data:", get_news_data(coin))
-    print("summarize:", summarize)
-    return sentiment_label, recommendation, final_score, summarize
+    return sentiment_label, recommendation, final_score, summary
