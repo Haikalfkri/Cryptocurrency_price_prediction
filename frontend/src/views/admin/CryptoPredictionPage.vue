@@ -75,7 +75,7 @@
 
           <!-- Final Score -->
           <div class="flex items-center justify-center w-1/4 h-20 bg-yellow-100 rounded-full shadow-lg">
-            <p class="text-center text-lg font-semibold">{{ final_score }}</p>
+            <p class="text-center text-lg font-semibold">{{ final_score }}%</p>
           </div>
         </div>
 
