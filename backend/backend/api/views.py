@@ -189,8 +189,7 @@ class FetchCryptoChart(APIView):
             return Response({"error": str(e)}, status=500)
 
  # Get the full path
-model = load_model(
-    'D:/Documents/Haikal Politeknik Negeri Batam/Semester 6/PBL/crypto_price_prediction/backend/backend/api/lstm_model.keras')  # Load the model
+model = load_model(os.environ.get('MODEL_DIR'))  # Load the model
 
 # helper function to convert matplotlib plots
 
