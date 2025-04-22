@@ -65,12 +65,8 @@ export default {
                 localStorage.setItem('username', username);
                 localStorage.setItem('email', email)
 
-                // redirect based on role
-                if (role == 'user') {
-                    this.$router.push("/user/cryptoPage");
-                } else {
-                    this.$router.push("/admin/cryptoPage");
-                }
+                // redirect url
+                this.$router.push("/cryptoPage");
             } catch (error) {
                 console.log("Login failed. Check your credentials");
             }

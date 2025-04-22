@@ -8,7 +8,7 @@
                         Prediction</span>
                 </a>
                 <ul class="hidden md:flex space-x-6 text-sm font-medium">
-                    <li><router-link :to="cryptoPageRoute" class="text-gray-900 hover:text-blue-700">Crypto</router-link></li>
+                    <li><router-link to="/cryptoPage" class="text-gray-900 hover:text-blue-700">Crypto</router-link></li>
                     <li><router-link to="/predictPage" class="text-gray-900 hover:text-blue-700">Predict</router-link></li>
                     <li v-if="role === 'admin'"><a href="#"
                             class="text-gray-900 hover:text-blue-700">User Management</a></li>
@@ -135,12 +135,6 @@ export default {
         // Clean up event listener
         document.removeEventListener('click', this.closeDropdown);
     },
-    computed: {
-        cryptoPageRoute() {
-            const userRole = localStorage.getItem('role'); // Assuming role is stored in Vuex
-            return userRole === 'admin' ? '/admin/cryptoPage' : '/user/cryptoPage';
-        }
-    }
 };
 </script>
 
