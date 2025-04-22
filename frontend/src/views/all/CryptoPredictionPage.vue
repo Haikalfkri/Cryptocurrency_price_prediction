@@ -61,23 +61,30 @@
 
       <!-- Sentiment, Recommendation, Final Score, and Summarize -->
       <div class="w-full mt-10">
-        <h2 class="text-xl font-semibold text-center mb-4">Sentiment Analysis and Recommendations</h2>
-        <div class="flex justify-around space-x-4 mb-8">
+        <h2 class="text-xl font-semibold text-center mb-6">Sentiment Analysis and Recommendations</h2>
+        <div class="flex flex-wrap justify-center gap-6 mb-8">
           <!-- Sentiment Label -->
-          <div class="flex items-center justify-center w-1/4 h-20 bg-blue-100 rounded-full shadow-lg">
+          <div
+            :class="['flex flex-col items-center justify-center w-36 h-36 rounded-full border-4 shadow-lg transition-transform hover:scale-105', sentimentClass]">
             <p class="text-center text-lg font-semibold">{{ sentiment_label }}</p>
+            <p class="text-xs text-gray-600 mb-1">Sentiment</p>
           </div>
 
           <!-- Recommendation -->
-          <div class="flex items-center justify-center w-1/4 h-20 bg-green-100 rounded-full shadow-lg">
+          <div
+            :class="['flex flex-col items-center justify-center w-36 h-36 rounded-full border-4 shadow-lg transition-transform hover:scale-105', recommendationClass]">
             <p class="text-center text-lg font-semibold">{{ recommendation }}</p>
+            <p class="text-xs text-gray-600 mb-1">Recommendation</p>
           </div>
 
           <!-- Final Score -->
-          <div class="flex items-center justify-center w-1/4 h-20 bg-yellow-100 rounded-full shadow-lg">
+          <div
+            :class="['flex flex-col items-center justify-center w-36 h-36 rounded-full border-4 shadow-lg transition-transform hover:scale-105', scoreClass]">
             <p class="text-center text-lg font-semibold">{{ final_score }}%</p>
+            <p class="text-xs text-gray-600 mb-1">Score</p>
           </div>
         </div>
+
 
         <!-- Summary -->
         <div class="w-full bg-white rounded-2xl shadow-lg p-6">
@@ -110,6 +117,26 @@ export default {
   computed: {
     filteredPredictionAnalysis() {
       return this.predictPriceAnalysis.filter(item => item.date);
+    },
+    sentimentClass() {
+      const label = this.sentiment_label.toLowerCase();
+      if (label.includes('positive')) return 'border-green-500 text-green-700 bg-green-50';
+      if (label.includes('neutral')) return 'border-yellow-500 text-yellow-700 bg-yellow-50';
+      if (label.includes('negative')) return 'border-red-500 text-red-700 bg-red-50';
+      return 'border-gray-300 text-gray-700 bg-gray-50';
+    },
+    recommendationClass() {
+      const rec = this.recommendation.toLowerCase();
+      if (rec.includes('buy')) return 'border-green-500 text-green-700 bg-green-50';
+      if (rec.includes('hold')) return 'border-yellow-500 text-yellow-700 bg-yellow-50';
+      if (rec.includes('sell')) return 'border-red-500 text-red-700 bg-red-50';
+      return 'border-gray-300 text-gray-700 bg-gray-50';
+    },
+    scoreClass() {
+      const score = this.final_score;
+      if (score >= 70) return 'border-green-500 text-green-700 bg-green-50';
+      if (score >= 40) return 'border-yellow-500 text-yellow-700 bg-yellow-50';
+      return 'border-red-500 text-red-700 bg-red-50';
     }
   },
   methods: {
@@ -118,7 +145,6 @@ export default {
     },
     renderFutureChart() {
       const ctx = document.getElementById('futureChart').getContext('2d');
-
       const labels = this.filteredPredictionAnalysis.map(item => item.date);
       const prices = this.filteredPredictionAnalysis.map(item => item.predicted_price);
 
@@ -181,5 +207,5 @@ export default {
 </script>
 
 <style scoped>
-/* No raw CSS needed — all styling done via Tailwind */
+/* No extra raw CSS needed, Tailwind handles everything */
 </style>
