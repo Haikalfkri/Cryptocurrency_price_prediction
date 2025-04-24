@@ -16,13 +16,15 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from .serializers import LoginSerializer, RegisterSerializer
-from django.shortcuts import render
 from django.contrib.auth import authenticate
 from django.core.cache import cache
 
 from openai import OpenAI
 import os
 from dotenv import load_dotenv
+
+from django.http import JsonResponse
+from django.db import connection, OperationalError
 
 from api.prediction_analysis import price_prediction_analysis
 from api.sentiment_analysis import sentiment_and_prediction_analysis
@@ -35,6 +37,24 @@ load_dotenv()
 matplotlib.use('Agg')
 
 # Authentications
+
+
+def health_check(request):
+    db_status = "ok"
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+            one = cursor.fetchone()
+            if one is None or one[0] != 1:
+                db_status = "error"
+    except OperationalError as e:
+        db_status = f"error: {str(e)}"
+
+    return JsonResponse({
+        "api": "ok",
+        "database": db_status,
+        "status": "ok" if db_status == "ok" else "error"
+    })
 
 
 class RegisterView(APIView):
@@ -308,7 +328,6 @@ class fetchCryptoPrediction(APIView):
                 "summarize": summarize,
             }
 
-
             # cache the result
             cache.set(cache_key, result, timeout=60 * 60)
 
@@ -318,3 +337,42 @@ class fetchCryptoPrediction(APIView):
             return Response({"error": str(e)}, status=500)
 
 
+
+# Top Volume Coins
+class TopVolumeCoinView(APIView):
+    def get(self, request):
+        url = 'https://api.coingecko.com/api/v3/coins/markets'
+        params = {'vs_currency': 'usd', 'order': 'volume_desc', 'per_page': 10, 'page': 1}
+        response = requests.get(url, params=params).json()
+        return Response(response)
+    
+
+# Trending Coins
+class TrendingCoinView(APIView):
+    def get(self, request):
+        url = 'https://api.coingecko.com/api/v3/search/trending'
+        data = requests.get(url).json()
+        coins = data.get('coins', [])[:10]
+        simplified = [{
+            'name': coin['item']['name'],
+            'symbol': coin['item']['symbol'],
+            'market_cap_rank': coin['item']['market_cap_rank'],
+            'price_btc': coin['item']['price_btc'],
+        } for coin in coins]
+        return Response(simplified)
+    
+# market cap
+class MarketCapRankingView(APIView):
+    def get(self, request):
+        url = 'https://api.coingecko.com/api/v3/coins/markets'
+        params = {'vs_currency': 'usd', 'order': 'market_cap_desc', 'per_page': 10, 'page': 1}
+        response = requests.get(url, params=params).json()
+        return Response(response)
+
+# top exchanges 
+class TopExchangesView(APIView):
+    def get(self, request):
+        url = 'https://api.coingecko.com/api/v3/exchanges'
+        response = requests.get(url).json()
+        top_exchanges = response[:10]
+        return Response(top_exchanges)
