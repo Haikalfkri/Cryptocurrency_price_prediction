@@ -51,3 +51,10 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+    
+
+class CryptoSymbols(models.Model):
+    name = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.name
