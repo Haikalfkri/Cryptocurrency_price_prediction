@@ -2,6 +2,8 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 
+from .models import CryptoSymbols
+
 User = get_user_model()
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -34,3 +36,9 @@ class LoginSerializer(serializers.Serializer):
         if not user.check_password(attrs['password']):
             raise serializers.ValidationError("Invalid password.")
         return attrs
+    
+
+class CryptoSymbolSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CryptoSymbols
+        fields = ['name']

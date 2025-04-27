@@ -15,7 +15,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
-from .serializers import LoginSerializer, RegisterSerializer
+from .serializers import LoginSerializer, RegisterSerializer, CryptoSymbolSerializer
 from django.contrib.auth import authenticate
 from django.core.cache import cache
 
@@ -28,6 +28,7 @@ from django.db import connection, OperationalError
 
 from api.prediction_analysis import price_prediction_analysis
 from api.sentiment_analysis import sentiment_and_prediction_analysis
+from api.models import CryptoSymbols
 
 load_dotenv()
 
@@ -353,6 +354,21 @@ class TopVolumeCoinView(APIView):
 
         return Response(response)
     
+
+# Crypto List
+class CryptoListView(APIView):
+    def get(self, request):
+        
+        cached_data = cache.get('crypto_symbol_list')
+        if cached_data:
+            return Response(cached_data)
+
+        crypto_symbols = CryptoSymbols.objects.all()
+        serializer = CryptoSymbolSerializer(crypto_symbols, many=True)
+
+        cache.set('crypto_symbol_list', serializer.data, 86400)
+
+        return Response(serializer.data)
 
 # Trending Coins
 class TrendingCoinView(APIView):
