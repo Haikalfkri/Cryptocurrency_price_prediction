@@ -341,38 +341,84 @@ class fetchCryptoPrediction(APIView):
 # Top Volume Coins
 class TopVolumeCoinView(APIView):
     def get(self, request):
+        cached_data = cache.get('top_volume_coins')
+        if cached_data:
+            return Response(cached_data)
+
         url = 'https://api.coingecko.com/api/v3/coins/markets'
         params = {'vs_currency': 'usd', 'order': 'volume_desc', 'per_page': 10, 'page': 1}
         response = requests.get(url, params=params).json()
+
+        cache.set('top_volume_coins', response, timeout=300)
+
         return Response(response)
     
 
 # Trending Coins
 class TrendingCoinView(APIView):
     def get(self, request):
-        url = 'https://api.coingecko.com/api/v3/search/trending'
-        data = requests.get(url).json()
-        coins = data.get('coins', [])[:10]
-        simplified = [{
-            'name': coin['item']['name'],
-            'symbol': coin['item']['symbol'],
-            'market_cap_rank': coin['item']['market_cap_rank'],
-            'price_btc': coin['item']['price_btc'],
-        } for coin in coins]
+
+        cached_data = cache.get('trending_coins')
+        if cached_data:
+            return Response(cached_data)
+
+        # Ambil trending coins
+        trending_url = 'https://api.coingecko.com/api/v3/search/trending'
+        trending_data = requests.get(trending_url).json()
+
+        # Ambil harga 1 BTC dalam USD
+        btc_price_url = 'https://api.coingecko.com/api/v3/simple/price'
+        params = {'ids': 'bitcoin', 'vs_currencies': 'usd'}
+        btc_price_data = requests.get(btc_price_url, params=params).json()
+        btc_to_usd = btc_price_data.get('bitcoin', {}).get('usd', 0)
+
+        coins = trending_data.get('coins', [])[:10]
+        
+        simplified = []
+        for coin in coins:
+            price_btc = coin['item']['price_btc']
+            price_usd = price_btc * btc_to_usd if btc_to_usd else None
+
+            simplified.append({
+                'name': coin['item']['name'],
+                'symbol': coin['item']['symbol'],
+                'market_cap_rank': coin['item']['market_cap_rank'],
+                'price_btc': price_btc,
+                'price_usd': price_usd,
+            })
+
+        cache.set('trending_coins', simplified, timeout=300)
+
         return Response(simplified)
     
 # market cap
 class MarketCapRankingView(APIView):
     def get(self, request):
+        
+        cached_data = cache.get('market_cap_rankings')
+        if cached_data:
+            return Response(cached_data)
+
         url = 'https://api.coingecko.com/api/v3/coins/markets'
         params = {'vs_currency': 'usd', 'order': 'market_cap_desc', 'per_page': 10, 'page': 1}
         response = requests.get(url, params=params).json()
+
+        cache.set('market_cap_rankings', response, timeout=300)
+
         return Response(response)
 
 # top exchanges 
 class TopExchangesView(APIView):
     def get(self, request):
+        
+        cached_data = cache.get('top_exchanges')
+        if cached_data:
+            return Response(cached_data)
+
         url = 'https://api.coingecko.com/api/v3/exchanges'
-        response = requests.get(url).json()
-        top_exchanges = response[:10]
+        data = requests.get(url).json()
+        top_exchanges = data[:10]  # ini baru aman kalau data itu list
+
+        cache.set('top_exchanges', top_exchanges, timeout=300)
+
         return Response(top_exchanges)
