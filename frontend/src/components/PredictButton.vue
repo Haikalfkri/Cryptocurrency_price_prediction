@@ -5,8 +5,17 @@
         <!-- Search Input -->
         <div class="relative w-full">
             <input v-model="coin" type="text" id="crypto-search" class="border border-gray-300 text-gray-900 text-sm rounded-2xl focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5
-         dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search Crypto e.g BTC-USD, ETH-USD"
-                required />
+         dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search Crypto e.g BTC-USD, ETH-USD" required
+                @input="fetchCryptoList" />
+
+            <!-- Dropdown -->
+            <ul v-if="cryptoList.length > 0"
+                class="absolute bg-white border border-gray-300 w-full mt-1 rounded-lg shadow-lg max-h-48 overflow-y-auto z-10">
+                <li v-for="(crypto, index) in cryptoList" :key="index" @click="selectCrypto(crypto.name)"
+                    class="text-left p-2 cursor-pointer hover:bg-blue-100">
+                    {{ crypto.name }}
+                </li>
+            </ul>
         </div>
 
         <!-- Dropdown -->
@@ -38,8 +47,6 @@
             <span>{{ loading ? 'Loading...' : 'Search' }}</span>
         </button>
     </form>
-
-
 </template>
 
 <script>
@@ -52,7 +59,9 @@ export default {
             coin: '',
             days: 2,
             loading: false,
-            error: null
+            error: null,
+            cryptoList: [],  // Daftar cryptocurrency yang muncul saat mengetik
+            debounceTimeout: null,  // Untuk debouncing
         };
     },
     methods: {
@@ -80,10 +89,41 @@ export default {
             } finally {
                 this.loading = false;
             }
+        },
+
+        async fetchCryptoList() {
+            // Hapus timeout sebelumnya jika ada
+            if (this.debounceTimeout) {
+                clearTimeout(this.debounceTimeout);
+            }
+
+            // Tunggu sebentar sebelum melakukan request ke API (debouncing)
+            this.debounceTimeout = setTimeout(async () => {
+                if (this.coin.length < 3) {
+                    this.cryptoList = []; // Hapus daftar jika input terlalu pendek
+                    return;
+                }
+
+                try {
+                    const response = await axios.get('http://127.0.0.1:8000/api/v1/cryptoList/');
+                    this.cryptoList = response.data.filter(crypto =>
+                        crypto.name.toLowerCase().includes(this.coin.toLowerCase())
+                    );
+                } catch (err) {
+                    console.error("Fetch crypto list error:", err);
+                    this.cryptoList = [];
+                }
+            }, 500); // Delay 500ms sebelum request
+        },
+
+        selectCrypto(cryptoName) {
+            this.coin = cryptoName;  // Set input ke nama yang dipilih
+            this.cryptoList = [];  // Hapus dropdown setelah memilih
         }
     }
 }
 </script>
+
 
 <style scoped>
 .chart-container {

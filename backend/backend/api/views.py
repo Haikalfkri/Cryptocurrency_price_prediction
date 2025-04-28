@@ -19,7 +19,8 @@ from .serializers import LoginSerializer, RegisterSerializer, CryptoSymbolSerial
 from django.contrib.auth import authenticate
 from django.core.cache import cache
 
-from openai import OpenAI
+from newsapi import NewsApiClient
+
 import os
 from dotenv import load_dotenv
 
@@ -438,3 +439,32 @@ class TopExchangesView(APIView):
         cache.set('top_exchanges', top_exchanges, timeout=300)
 
         return Response(top_exchanges)
+    
+
+
+class CryptoNewsListView(APIView):
+    def get(self, request):
+        cached_data = cache.get('crypto_news_list')
+        if cached_data:
+            return Response(cached_data)
+        
+        newsapi = NewsApiClient(api_key=os.getenv('NEWS_API_KEY'))
+
+        all_articles = newsapi.get_everything(
+            q='cryptocurrency',
+            language='en',
+            sort_by='publishedAt',
+            page_size=50
+        )
+
+        news_data = []
+        for article in all_articles.get('articles', []):
+            news_data.append({
+                'title': article.get('title'),
+                'image': article.get('urlToImage'),
+                'link': article.get('url')
+            })
+
+        cache.set('crypto_news_list', news_data, 3600)
+
+        return Response(news_data)
