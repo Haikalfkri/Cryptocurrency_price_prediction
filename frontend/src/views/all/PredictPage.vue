@@ -96,55 +96,44 @@ import PredictButton from '@/components/PredictButton.vue';
 import axios from 'axios';
 
 export default {
-  name: "PredictPage",
-  components: {
-    Navbar,
-    PredictButton,
-  },
-  data() {
-    return {
-      topVolume: JSON.parse(localStorage.getItem('topVolume')) || [],
-      trendingCoins: JSON.parse(localStorage.getItem('trendingCoins')) || [],
-      marketCapRanking: JSON.parse(localStorage.getItem('marketCapRanking')) || [],
-      topExchanges: JSON.parse(localStorage.getItem('topExchanges')) || [],
-      allDataFetched: false,
-    };
-  },
-  mounted() {
-    if (this.topVolume.length && this.trendingCoins.length && this.marketCapRanking.length && this.topExchanges.length) {
-      // If data exists in localStorage, no need to fetch again
-      this.allDataFetched = true;
-    } else {
-      this.fetchData();
-    }
-  },
-  methods: {
-    async fetchData() {
-      try {
-        const [topVolumeRes, trendingCoinsRes, marketCapRes, topExchangesRes] = await Promise.all([
-          axios.get('http://127.0.0.1:8000/api/v1/topVolumeCoin/'),
-          axios.get('http://127.0.0.1:8000/api/v1/trendingCoin/'),
-          axios.get('http://127.0.0.1:8000/api/v1/marketCapRankings/'),
-          axios.get('http://127.0.0.1:8000/api/v1/topExchangesRankings/')
-        ]);
-        
-        this.topVolume = topVolumeRes.data;
-        this.trendingCoins = trendingCoinsRes.data;
-        this.marketCapRanking = marketCapRes.data;
-        this.topExchanges = topExchangesRes.data;
-
-        // Save the data in localStorage
-        localStorage.setItem('topVolume', JSON.stringify(this.topVolume));
-        localStorage.setItem('trendingCoins', JSON.stringify(this.trendingCoins));
-        localStorage.setItem('marketCapRanking', JSON.stringify(this.marketCapRanking));
-        localStorage.setItem('topExchanges', JSON.stringify(this.topExchanges));
-        
-        this.allDataFetched = true;
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
+    name: "PredictPage",
+    components: {
+        Navbar,
+        PredictButton,
     },
-  },
+    data() {
+        return {
+            topVolume: [],
+            trendingCoins: [],
+            marketCapRanking: [],
+            topExchanges: [],
+            allDataFetched: false, // Track if all data is fetched
+        };
+    },
+    mounted() {
+        this.fetchData();
+    },
+    methods: {
+        async fetchData() {
+            try {
+                const [topVolumeRes, trendingCoinsRes, marketCapRes, topExchangesRes] = await Promise.all([
+                    axios.get('http://127.0.0.1:8000/api/v1/topVolumeCoin/'),
+                    axios.get('http://127.0.0.1:8000/api/v1/trendingCoin/'),
+                    axios.get('http://127.0.0.1:8000/api/v1/marketCapRankings/'),
+                    axios.get('http://127.0.0.1:8000/api/v1/topExchangesRankings/')
+                ]);
+
+                this.topVolume = topVolumeRes.data;
+                this.trendingCoins = trendingCoinsRes.data;
+                this.marketCapRanking = marketCapRes.data;
+                this.topExchanges = topExchangesRes.data;
+
+                this.allDataFetched = true; // All data is fetched, trigger the animation
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        },
+    },
 };
 </script>
 
