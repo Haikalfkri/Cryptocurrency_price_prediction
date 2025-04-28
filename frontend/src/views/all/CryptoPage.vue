@@ -1,6 +1,6 @@
 <template>
     <Navbar class="top-0 left-0 w-full bg-white shadow-md z-50" />
-  
+    
     <div class="mt-6">
       <CryptoSearchButton />
     </div>
@@ -11,9 +11,22 @@
           v-for="(news, index) in displayedNews"
           :key="index"
           @click="openLink(news.link)"
-          class="cursor-pointer rounded-lg overflow-hidden shadow-md hover:shadow-lg transition duration-300 bg-white"
+          class="cursor-pointer rounded-lg overflow-hidden shadow-md hover:shadow-lg transition duration-300 bg-white transform hover:scale-105"
         >
-          <img :src="news.image" alt="News Image" class="w-full h-40 object-cover" />
+          <transition name="pop-up" @before-enter="beforeEnter" @enter="enter" @leave="leave">
+            <img
+              v-if="news.image"
+              :src="news.image"
+              alt="News Image"
+              class="w-full h-40 object-cover"
+            />
+            <img
+              v-else
+              src="https://b2161880.smushcdn.com/2161880/wp-content/uploads/2023/07/financial-stock-market-exchange-gold-coins-global-economic-chart-generative-ai.jpg?lossy=1&strip=1&webp=1"
+              alt="Default Image"
+              class="w-full h-40 object-cover"
+            />
+          </transition>
           <div class="p-4">
             <h2 class="text-md font-semibold line-clamp-2">{{ news.title }}</h2>
           </div>
@@ -66,6 +79,24 @@
       openLink(link) {
         window.open(link, '_blank');
       },
+      // Transition hooks
+      beforeEnter(el) {
+        el.style.transform = 'scale(1.1)';
+        el.style.opacity = 0;
+      },
+      enter(el, done) {
+        el.offsetHeight; // trigger reflow
+        el.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+        el.style.transform = 'scale(1)';
+        el.style.opacity = 1;
+        done();
+      },
+      leave(el, done) {
+        el.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+        el.style.transform = 'scale(1.1)';
+        el.style.opacity = 0;
+        done();
+      },
     },
     mounted() {
       this.fetchNews();
@@ -80,6 +111,15 @@
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
+  }
+  
+  /* Pop-up animation */
+  .pop-up-enter-active, .pop-up-leave-active {
+    transition: transform 0.3s ease, opacity 0.3s ease;
+  }
+  .pop-up-enter, .pop-up-leave-to {
+    transform: scale(1.1);
+    opacity: 0;
   }
   </style>
   
