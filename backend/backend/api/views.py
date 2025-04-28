@@ -2,6 +2,7 @@ import json
 from datetime import timedelta, datetime
 import base64
 import io
+from rest_framework_simplejwt.tokens import AccessToken
 import matplotlib.pyplot as plt
 import matplotlib
 from sklearn.preprocessing import MinMaxScaler
@@ -69,7 +70,6 @@ class RegisterView(APIView):
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
 class LoginView(APIView):
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
@@ -79,22 +79,14 @@ class LoginView(APIView):
             user = authenticate(email=email, password=password)
 
             if user:
-                refresh = RefreshToken.for_user(user)
+                # Issue access token
+                access_token = AccessToken.for_user(user)
                 response = Response({
-                    "access": str(refresh.access_token),
+                    "access": str(access_token),
                     "role": user.role.name,
                     "username": user.username,
                     "email": user.email,
                 })
-
-                # store refresh token in HttpOnly cookie
-                response.set_cookie(
-                    key="refresh_token",
-                    value=str(refresh),
-                    httponly=True,
-                    secure=True,
-                    samesite="Lax",
-                )
 
                 return response
 
@@ -111,24 +103,9 @@ class LogoutView(APIView):
 
     def post(self, request):
         try:
-            # Get refresh token from HttpOnly cookie
-            refresh_token = request.COOKIES.get("refresh_token")
-            if not refresh_token:
-                return Response({
-                    "error": "Refresh token is required"
-                }, status=status.HTTP_400_BAD_REQUEST)
-
-            # blacklist the refresh token
-            try:
-                token = RefreshToken(refresh_token)
-                token.blacklist()
-            except Exception:
-                return Response({"error": "Invalid refresh token"}, status=status.HTTP_400_BAD_REQUEST)
-
-            # Create response and delete refresh_token cookie
+            # Since we're not using refresh tokens or cookies, just return a success message
             response = Response(
                 {"message": "User logged out successfully"}, status=status.HTTP_200_OK)
-            response.delete_cookie("refresh_token")
             return response
 
         except Exception as e:

@@ -104,6 +104,8 @@ export default {
                 localStorage.removeItem("role");
                 localStorage.removeItem("username");
                 localStorage.removeItem("email");
+                localStorage.removeItem("coin");
+                localStorage.removeItem("predictionResponse");
 
                 // redirect to login page
                 this.$router.push("/login").then(() => {
