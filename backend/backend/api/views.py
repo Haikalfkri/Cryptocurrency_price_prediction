@@ -32,6 +32,11 @@ from api.prediction_analysis import price_prediction_analysis
 from api.sentiment_analysis import sentiment_and_prediction_analysis
 from api.models import CryptoSymbols
 
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
+
+from .models import CustomUser
+
 load_dotenv()
 
 
@@ -62,13 +67,26 @@ def health_check(request):
 
 class RegisterView(APIView):
     def post(self, request):
+        # Validasi apakah format email benar
+        email = request.data.get('email')
+        try:
+            validate_email(email)  # Validasi format email
+        except ValidationError:
+            return Response({"email": "Invalid email format."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Cek apakah email sudah ada
+        if CustomUser.objects.filter(email=email).exists():
+            return Response({"email": "Email is already registered."}, status=status.HTTP_400_BAD_REQUEST)
+
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
             return Response({
                 "message": "User registered successfully"
             }, status=status.HTTP_201_CREATED)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class LoginView(APIView):
     def post(self, request):
