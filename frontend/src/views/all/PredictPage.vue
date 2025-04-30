@@ -34,13 +34,13 @@
                 <thead>
                     <tr>
                         <th class="text-left">Name</th>
-                        <th class="text-right">Price (USD)</th>
+                        <th class="text-right">Price (BTC)</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="coin in trendingCoins" :key="coin.name">
                         <td class="text-left">{{ coin.name }}</td>
-                        <td class="text-right">${{ coin.price_usd.toFixed(3) }}</td>
+                        <td class="text-right">{{ coin.price_btc.toFixed(8) }}</td>
                     </tr>
                 </tbody>
             </table>

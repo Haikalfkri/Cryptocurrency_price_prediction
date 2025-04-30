@@ -58,3 +58,11 @@ class CryptoSymbols(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class UserFeedback(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True)
+    feedback = models.CharField(max_length=255, blank=True)
+
+    def __str__(self):
+        return self.user.email

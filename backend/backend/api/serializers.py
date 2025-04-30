@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 
-from .models import CryptoSymbols
+from .models import CryptoSymbols, UserFeedback
 
 User = get_user_model()
 
@@ -42,3 +42,9 @@ class CryptoSymbolSerializer(serializers.ModelSerializer):
     class Meta:
         model = CryptoSymbols
         fields = ['name']
+
+
+class UserFeedbackSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserFeedback
+        fields = '__all__'
