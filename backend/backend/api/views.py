@@ -11,12 +11,11 @@ import yfinance as yf
 import numpy as np
 import pandas as pd
 import requests
-from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
-from .serializers import LoginSerializer, RegisterSerializer, CryptoSymbolSerializer
+from .serializers import LoginSerializer, RegisterSerializer, CryptoSymbolSerializer, UserFeedbackSerializer
 from django.contrib.auth import authenticate
 from django.core.cache import cache
 
@@ -165,10 +164,11 @@ class FetchCryptoData(APIView):
                 "Description": data["description"].get("en", "")
             }
 
-            cache.set(cache_key, coin_data, timeout=600)
+            cache.set(cache_key, coin_data, timeout=7200)
             return Response(coin_data, status=200)
         except Exception as e:
             return Response({"error": str(e)}, status=500)
+
 
 class FetchCryptoChart(APIView):
     def post(self, request):
@@ -179,7 +179,7 @@ class FetchCryptoChart(APIView):
             if not coin:
                 return Response({"error": "Coin parameter is required"}, status=400)
 
-            period_mapping = {"week": 7, "month": 30, "all": "max"}
+            period_mapping = {"week": 7, "month": 30,}
             if period not in period_mapping:
                 return Response({"error": "Invalid period"}, status=400)
 
@@ -204,6 +204,7 @@ class FetchCryptoChart(APIView):
             return Response({"chart": prices}, status=200)
         except Exception as e:
             return Response({"error": str(e)}, status=500)
+
 
  # Get the full path
 model = load_model(
@@ -333,8 +334,6 @@ class fetchCryptoPrediction(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=500)
 
-
-
 # Top Volume Coins
 class TopVolumeCoinView(APIView):
     def get(self, request):
@@ -366,10 +365,10 @@ class CryptoListView(APIView):
 
         return Response(serializer.data)
 
+
 # Trending Coins
 class TrendingCoinView(APIView):
     def get(self, request):
-
         cached_data = cache.get('trending_coins')
         if cached_data:
             return Response(cached_data)
@@ -378,25 +377,17 @@ class TrendingCoinView(APIView):
         trending_url = 'https://api.coingecko.com/api/v3/search/trending'
         trending_data = requests.get(trending_url).json()
 
-        # Ambil harga 1 BTC dalam USD
-        btc_price_url = 'https://api.coingecko.com/api/v3/simple/price'
-        params = {'ids': 'bitcoin', 'vs_currencies': 'usd'}
-        btc_price_data = requests.get(btc_price_url, params=params).json()
-        btc_to_usd = btc_price_data.get('bitcoin', {}).get('usd', 0)
-
         coins = trending_data.get('coins', [])[:10]
         
         simplified = []
         for coin in coins:
             price_btc = coin['item']['price_btc']
-            price_usd = price_btc * btc_to_usd if btc_to_usd else None
 
             simplified.append({
                 'name': coin['item']['name'],
                 'symbol': coin['item']['symbol'],
                 'market_cap_rank': coin['item']['market_cap_rank'],
                 'price_btc': price_btc,
-                'price_usd': price_usd,
             })
 
         cache.set('trending_coins', simplified, timeout=300)
@@ -463,3 +454,20 @@ class CryptoNewsListView(APIView):
         cache.set('crypto_news_list', news_data, 3600)
 
         return Response(news_data)
+    
+
+
+class UserFeedbackView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = UserFeedbackSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response({
+                'message': 'Feedback berhasil disimpan.',
+                'data': serializer.data
+            }, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
