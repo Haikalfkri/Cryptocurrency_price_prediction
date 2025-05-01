@@ -78,6 +78,8 @@
 import Navbar from '@/components/NavbarCom.vue';
 import axios from 'axios';
 
+axios.defaults.headers.common["ngrok-skip-browser-warning"] = true;
+
 export default {
   name: "UserFeedbackPage",
   components: {
@@ -97,7 +99,7 @@ export default {
       try {
         const token = localStorage.getItem('accessToken');
         await axios.post(
-          'http://localhost:8000/api/v1/userFeedback/',
+          'https://6f33-103-150-218-251.ngrok-free.app/api/v1/userFeedback/',
           { feedback: this.feedback },
           {
             headers: {

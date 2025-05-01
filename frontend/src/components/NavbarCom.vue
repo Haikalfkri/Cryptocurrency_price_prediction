@@ -79,6 +79,8 @@
 <script>
 import axios from 'axios';
 
+axios.defaults.headers.common["ngrok-skip-browser-warning"] = true;
+
 export default {
     name: "NavbarComponent",
     data() {
@@ -96,7 +98,7 @@ export default {
             const token = localStorage.getItem("accessToken");
 
             try {
-                await axios.post("http://localhost:8000/api/v1/logout", {}, {
+                await axios.post("https://6f33-103-150-218-251.ngrok-free.app/api/v1/logout", {}, {
                     withCredentials: true,
                     headers: {
                         Authorization: `Bearer ${token}`

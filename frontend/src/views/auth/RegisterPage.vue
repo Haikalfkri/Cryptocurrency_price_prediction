@@ -81,6 +81,8 @@
 <script>
 import axios from 'axios';
 
+axios.defaults.headers.common["ngrok-skip-browser-warning"] = true;
+
 export default {
     name: "RegisterPage",
     data() {
@@ -103,7 +105,7 @@ export default {
             }
             this.loading = true; // Start loading
             try {
-                await axios.post("http://127.0.0.1:8000/api/v1/register", {
+                await axios.post("https://6f33-103-150-218-251.ngrok-free.app/api/v1/register", {
                     username: this.username,
                     email: this.email,
                     password: this.password,
