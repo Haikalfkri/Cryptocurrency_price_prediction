@@ -168,6 +168,7 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
     "https://6f33-103-150-218-251.ngrok-free.app",
+    "https://cryptocurrency-price-prediction-gamma.vercel.app"
 ]
 
 CSRF_COOKIE_HTTPONLY = True
