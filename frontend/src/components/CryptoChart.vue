@@ -29,6 +29,8 @@ import { LineChart } from "vue-chart-3";
 import { Chart as ChartJS, Title, Tooltip, Legend, LineElement, PointElement, CategoryScale, LinearScale, LineController } from "chart.js";
 import axios from "axios";
 
+axios.defaults.headers.common["ngrok-skip-browser-warning"] = true;
+
 // ✅ Register necessary Chart.js components including LineController
 ChartJS.register(LineController, Title, Tooltip, Legend, LineElement, PointElement, CategoryScale, LinearScale);
 
@@ -71,7 +73,7 @@ export default defineComponent({
             loading.value = true;
             error.value = null;
             try {
-                const response = await axios.post("http://127.0.0.1:8000/api/v1/fetchCryptoChart/", {
+                const response = await axios.post("https://6f33-103-150-218-251.ngrok-free.app/api/v1/fetchCryptoChart/", {
                     coin: props.coin,
                     period: selectedPeriod.value,
                 });

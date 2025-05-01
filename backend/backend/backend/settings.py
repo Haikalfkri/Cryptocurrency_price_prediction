@@ -32,7 +32,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -165,9 +165,9 @@ SIMPLE_JWT = {
 
 # Allowed Origins
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_ALL_ORIGIN = False
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
+    "https://6f33-103-150-218-251.ngrok-free.app",
 ]
 
 CSRF_COOKIE_HTTPONLY = True

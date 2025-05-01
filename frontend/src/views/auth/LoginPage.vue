@@ -53,6 +53,8 @@
 <script>
 import axios from 'axios';
 
+axios.defaults.headers.common["ngrok-skip-browser-warning"] = true;
+
 export default {
     name: "LoginPage",
     data() {
@@ -67,7 +69,7 @@ export default {
         async Login() {
             this.loading = true; // Start loading state for button
             try {
-                const response = await axios.post("http://localhost:8000/api/v1/login", {
+                const response = await axios.post("https://6f33-103-150-218-251.ngrok-free.app/api/v1/login", {
                     email: this.email,
                     password: this.password,
                 }, { withCredentials: true });
