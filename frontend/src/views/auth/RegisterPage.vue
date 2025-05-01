@@ -110,7 +110,11 @@ export default {
                     email: this.email,
                     password: this.password,
                     password2: this.password2,
-                });
+                },
+                {
+                    withCredentials: true
+                }
+            );
                 this.showModal = true; // Show success modal
                 setTimeout(() => {
                     this.$router.push("/login");

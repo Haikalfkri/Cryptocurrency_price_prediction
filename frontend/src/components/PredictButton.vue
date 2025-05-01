@@ -78,7 +78,11 @@ export default {
                 const response = await axios.post('https://6f33-103-150-218-251.ngrok-free.app/api/v1/predictedCryptoData/', {
                     coin: this.coin,
                     no_of_days: this.days
-                });
+                },
+                {
+                    withCredentials: true
+                }
+            );
 
                 console.log("Response:", response.data);  // Debugging
 

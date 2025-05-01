@@ -76,7 +76,11 @@ export default defineComponent({
                 const response = await axios.post("https://6f33-103-150-218-251.ngrok-free.app/api/v1/fetchCryptoChart/", {
                     coin: props.coin,
                     period: selectedPeriod.value,
-                });
+                },
+                {
+                    withCredentials: true
+                }
+            );
 
                 const prices = response.data.chart;
                 const labels = prices.map(item => new Date(item[0]).toLocaleDateString());
