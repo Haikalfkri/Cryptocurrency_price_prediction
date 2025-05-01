@@ -102,6 +102,7 @@ export default {
           'https://6f33-103-150-218-251.ngrok-free.app/api/v1/userFeedback/',
           { feedback: this.feedback },
           {
+            withCredentials: true,
             headers: {
               Authorization: `Bearer ${token}`,
             },
