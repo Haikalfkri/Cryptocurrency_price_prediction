@@ -6,7 +6,16 @@
   </div>
 
   <div class="container mx-auto px-4 mt-10">
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    <!-- Loading Spinner -->
+    <div v-if="isLoading" class="flex justify-center items-center h-64">
+      <svg class="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+      </svg>
+    </div>
+
+    <!-- News Grid -->
+    <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
       <div
         v-for="(news, index) in displayedNews"
         :key="index"
@@ -15,7 +24,7 @@
       >
         <transition name="pop-up">
           <img
-            v-if="news.image"
+            v-if="isValidImage(news.image)"
             :src="news.image"
             alt="News Image"
             class="w-full h-40 object-cover"
@@ -28,12 +37,26 @@
           />
         </transition>
         <div class="p-4">
-          <h2 class="text-md font-semibold line-clamp-2">{{ news.title }}</h2>
+          <h2 class="text-md text-left font-semibold line-clamp-2">{{ news.title }}</h2>
+          <span
+            v-if="news.analyze"
+            :class="[ 
+              'inline-block mt-2 px-3 py-1 text-xs font-semibold rounded-full',
+              {
+                'bg-green-100 text-green-800': news.analyze === 'Good',
+                'bg-red-100 text-red-800': news.analyze === 'Bad',
+                'bg-gray-200 text-gray-800': news.analyze === 'Neutral'
+              }
+            ]"
+          >
+            {{ news.analyze }}
+          </span>
         </div>
       </div>
     </div>
 
-    <div class="flex justify-center mt-6 mb-6" v-if="displayedNews.length < allNews.length">
+    <!-- Show More Button -->
+    <div class="flex justify-center mt-6 mb-6" v-if="displayedNews.length < allNews.length && !isLoading">
       <button
         @click="showMore"
         class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300"
@@ -60,16 +83,20 @@ export default {
       allNews: [],
       displayedNews: [],
       itemsToShow: 8,
+      isLoading: true,
     };
   },
   methods: {
     async fetchNews() {
+      this.isLoading = true;
       try {
         const response = await axios.get('http://127.0.0.1:8000/api/v1/cryptoNewsList/');
         this.allNews = response.data;
         this.displayedNews = this.allNews.slice(0, this.itemsToShow);
       } catch (error) {
         console.error('Error fetching news:', error);
+      } finally {
+        this.isLoading = false;
       }
     },
     showMore() {
@@ -79,6 +106,9 @@ export default {
     openLink(link) {
       window.open(link, '_blank');
     },
+    isValidImage(url) {
+      return url && url !== "null" && url.trim() !== "";
+    },
   },
   mounted() {
     this.fetchNews();
@@ -87,7 +117,6 @@ export default {
 </script>
 
 <style scoped>
-/* Optional: untuk membatasi 2 baris title */
 .line-clamp-2 {
   overflow: hidden;
   display: -webkit-box;
@@ -95,12 +124,10 @@ export default {
   -webkit-box-orient: vertical;
 }
 
-/* Pop-up animation */
 .pop-up-enter-active, .pop-up-leave-active {
   transition: transform 0.3s ease, opacity 0.3s ease;
 }
-
-.pop-up-enter, .pop-up-leave-to /* .pop-up-leave-active in <2.1.8 */ {
+.pop-up-enter, .pop-up-leave-to {
   transform: scale(1.1);
   opacity: 0;
 }

@@ -28,7 +28,7 @@ from django.http import JsonResponse
 from django.db import connection, OperationalError
 
 from api.prediction_analysis import price_prediction_analysis
-from api.sentiment_analysis import sentiment_and_prediction_analysis
+from api.sentiment_analysis import sentiment_and_prediction_analysis, news_analyze
 from api.models import CryptoSymbols
 
 from django.core.validators import validate_email
@@ -440,15 +440,22 @@ class CryptoNewsListView(APIView):
             q='cryptocurrency',
             language='en',
             sort_by='publishedAt',
-            page_size=30
+            page_size=20
         )
 
         news_data = []
         for article in all_articles.get('articles', []):
+            title = article.get('title')
+            description = article.get('description', '')
+            full_text = f"{title}. {description}"
+
+            newsAnalyze = news_analyze(full_text)
+
             news_data.append({
                 'title': article.get('title'),
                 'image': article.get('urlToImage'),
-                'link': article.get('url')
+                'link': article.get('url'),
+                'analyze': newsAnalyze
             })
 
         cache.set('crypto_news_list', news_data, 3600)

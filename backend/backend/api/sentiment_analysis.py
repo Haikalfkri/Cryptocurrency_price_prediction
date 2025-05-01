@@ -138,3 +138,25 @@ def sentiment_and_prediction_analysis(coin, future_predictions):
     # simpan cache selama 1 jam
     cache.set(cache_key, result, timeout=60 * 60)
     return result
+
+
+
+def news_analyze(text):
+    cache_key = f"sentiment_{hashlib.md5(text.encode()).hexdigest()}"
+    cache_analyze = cache.get(cache_key)
+    if cache_analyze:
+        return cache_analyze
+
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",  # atau "gpt-4"
+        messages=[
+            {"role": "system", "content": "You are a sentiment analysis bot. Only respond with 'Good', 'Bad', or 'Neutral'."},
+            {"role": "user", "content": f"{text}\n\nSentiment:"}
+        ],
+        max_tokens=1,
+        temperature=0,
+    )
+
+    sentiment = response.choices[0].message.content.strip()
+    cache.set(cache_key, sentiment, timeout=3600)
+    return sentiment
