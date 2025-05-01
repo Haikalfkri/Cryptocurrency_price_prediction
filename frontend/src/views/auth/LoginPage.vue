@@ -72,7 +72,7 @@ export default {
                 const response = await axios.post("https://6f33-103-150-218-251.ngrok-free.app/api/v1/login", {
                     email: this.email,
                     password: this.password,
-                }, { withCredentials: true });
+                });
 
                 const token = response.data.access;
                 const role = response.data.role;
