@@ -21,4 +21,6 @@ urlpatterns = [
     path('marketCapRankings/', MarketCapRankingView.as_view(), name='market-cap'),
     path('topExchangesRankings/', TopExchangesView.as_view(), name='top-exchanges'),
     
+    # user
+    path('userFeedback/', UserFeedbackView.as_view(), name='user-feedback'),
 ]
