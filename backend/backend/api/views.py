@@ -440,7 +440,7 @@ class CryptoNewsListView(APIView):
             q='cryptocurrency',
             language='en',
             sort_by='publishedAt',
-            page_size=50
+            page_size=30
         )
 
         news_data = []

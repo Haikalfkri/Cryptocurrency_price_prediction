@@ -10,6 +10,8 @@ import PredictPage from "@/views/all/PredictPage.vue";
 import CryptoDetailPage from "@/views/all/CryptoDetailPage.vue";
 import CryptoPredictionPage from "@/views/all/CryptoPredictionPage.vue";
 
+import UserAboutUsPage from "@/views/user/UserAboutUsPage.vue";
+
 const routes = [
     // auth
     {
@@ -69,6 +71,14 @@ const routes = [
         component: PredictPage,
         meta: { requiresAuth: true }
     },
+
+    // User
+    {
+        path: "/UserAboutUsPage",
+        name: "UserAboutUsPage",
+        component: UserAboutUsPage,
+        meta: { requiresAuth: true }
+    }
 ]
 
 const router = createRouter({

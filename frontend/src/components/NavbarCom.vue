@@ -10,10 +10,12 @@
                 <ul class="hidden md:flex space-x-6 text-sm font-medium">
                     <li><router-link to="/cryptoPage" class="text-gray-900 hover:text-blue-700">Crypto</router-link></li>
                     <li><router-link to="/predictPage" class="text-gray-900 hover:text-blue-700">Predict</router-link></li>
+                    <li v-if="role === 'user'"><router-link to="/UserAboutUsPage" class="text-gray-900 hover:text-blue-700">About Us</router-link></li>
+
                     <li v-if="role === 'admin'"><a href="#"
                             class="text-gray-900 hover:text-blue-700">User Management</a></li>
                     <li v-if="role === 'admin'"><a href="#"
-                            class="text-gray-900 hover:text-blue-700">Feedbacks</a></li>
+                            class="text-gray-900 hover:text-blue-700">User Feedbacks</a></li>
                 </ul>
             </div>
 
@@ -63,6 +65,8 @@
                         class="block text-gray-900 hover:text-blue-700">Crypto</router-link></li>
                 <li><router-link to="/predictPage"
                         class="block text-gray-900 hover:text-blue-700">Predict</router-link></li>
+                <li v-if="role === 'user'"><router-link to="/UserAboutUsPage" class="block text-gray-900 hover:text-blue-700">About Us</router-link></li>
+
                 <li v-if="role === 'admin'"><a href="#"
                         class="block text-gray-900 hover:text-blue-700">User Management</a></li>
                 <li v-if="role === 'admin'"><a href="#"
