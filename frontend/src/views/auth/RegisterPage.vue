@@ -81,8 +81,6 @@
 <script>
 import axios from 'axios';
 
-axios.defaults.headers.common["ngrok-skip-browser-warning"] = true;
-
 export default {
     name: "RegisterPage",
     data() {
