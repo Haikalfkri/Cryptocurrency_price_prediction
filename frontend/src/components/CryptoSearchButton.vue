@@ -40,7 +40,7 @@ export default {
 
             try {
                 // send request to the fetch crypto data api
-                const response = await axios.post("https://6f33-103-150-218-251.ngrok-free.app/api/v1/fetchCryptoData/", {
+                const response = await axios.post("http://127.0.0.1:8000/api/v1/fetchCryptoData/", {
                     coin: this.cryptoName.toLowerCase(),
                 },
                 {

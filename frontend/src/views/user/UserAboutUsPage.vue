@@ -99,7 +99,7 @@ export default {
       try {
         const token = localStorage.getItem('accessToken');
         await axios.post(
-          'https://6f33-103-150-218-251.ngrok-free.app/api/v1/userFeedback/',
+          'http://127.0.0.1:8000/api/v1/userFeedback/',
           { feedback: this.feedback },
           {
             withCredentials: true,
@@ -114,14 +114,14 @@ export default {
         // Auto close after 1 second
         setTimeout(() => {
           this.closeModal();
-        }, 1000);
+        }, 2000);
       } catch (error) {
         this.errorMessage = "Failed to send feedback. Please try again.";
         console.error(error);
 
         setTimeout(() => {
           this.closeModal();
-        }, 1000);
+        }, 2000);
       } finally {
         this.loading = false;
       }

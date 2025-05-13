@@ -75,7 +75,7 @@ export default {
             this.error = null;
 
             try {
-                const response = await axios.post('https://6f33-103-150-218-251.ngrok-free.app/api/v1/predictedCryptoData/', {
+                const response = await axios.post('http://127.0.0.1:8000/api/v1/predictedCryptoData/', {
                     coin: this.coin,
                     no_of_days: this.days
                 },
