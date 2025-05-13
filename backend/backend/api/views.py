@@ -348,22 +348,6 @@ class TopVolumeCoinView(APIView):
         cache.set('top_volume_coins', response, timeout=300)
 
         return Response(response)
-    
-
-# Crypto List
-class CryptoListView(APIView):
-    def get(self, request):
-        
-        cached_data = cache.get('crypto_symbol_list')
-        if cached_data:
-            return Response(cached_data)
-
-        crypto_symbols = CryptoSymbols.objects.all()
-        serializer = CryptoSymbolSerializer(crypto_symbols, many=True)
-
-        cache.set('crypto_symbol_list', serializer.data, 86400)
-
-        return Response(serializer.data)
 
 
 # Trending Coins
@@ -462,6 +446,21 @@ class CryptoNewsListView(APIView):
 
         return Response(news_data)
     
+
+# Crypto List
+class CryptoListView(APIView):
+    def get(self, request):
+        
+        cached_data = cache.get('crypto_symbol_list')
+        if cached_data:
+            return Response(cached_data)
+
+        crypto_symbols = CryptoSymbols.objects.all()
+        serializer = CryptoSymbolSerializer(crypto_symbols, many=True)
+
+        cache.set('crypto_symbol_list', serializer.data, 86400)
+
+        return Response(serializer.data)
 
 
 class UserFeedbackView(APIView):

@@ -119,10 +119,10 @@ export default {
         async fetchData() {
             try {
                 const [topVolumeRes, trendingCoinsRes, marketCapRes, topExchangesRes] = await Promise.all([
-                    axios.get('https://6f33-103-150-218-251.ngrok-free.app/api/v1/topVolumeCoin/', { withCredentials: true }),
-                    axios.get('https://6f33-103-150-218-251.ngrok-free.app/api/v1/trendingCoin/', { withCredentials: true }),
-                    axios.get('https://6f33-103-150-218-251.ngrok-free.app/api/v1/marketCapRankings/', { withCredentials: true }),
-                    axios.get('https://6f33-103-150-218-251.ngrok-free.app/api/v1/topExchangesRankings/', { withCredentials: true })
+                    axios.get('http://127.0.0.1:8000/api/v1/topVolumeCoin/', { withCredentials: true }),
+                    axios.get('http://127.0.0.1:8000/api/v1/trendingCoin/', { withCredentials: true }),
+                    axios.get('http://127.0.0.1:8000/api/v1/marketCapRankings/', { withCredentials: true }),
+                    axios.get('http://127.0.0.1:8000/api/v1/topExchangesRankings/', { withCredentials: true })
                 ]);
 
                 this.topVolume = topVolumeRes.data;

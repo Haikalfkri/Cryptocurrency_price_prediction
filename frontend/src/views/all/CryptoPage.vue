@@ -92,7 +92,7 @@
       async fetchNews() {
         this.isLoading = true;
         try {
-          const response = await axios.get('https://6f33-103-150-218-251.ngrok-free.app/api/v1/cryptoNewsList/', {
+          const response = await axios.get('http://127.0.0.1:8000/api/v1/cryptoNewsList/', {
             withCredentials: true
           });
           this.allNews = response.data;

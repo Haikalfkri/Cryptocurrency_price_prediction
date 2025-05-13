@@ -98,7 +98,7 @@ export default {
             const token = localStorage.getItem("accessToken");
 
             try {
-                await axios.post("https://6f33-103-150-218-251.ngrok-free.app/api/v1/logout", {}, {
+                await axios.post("http://127.0.0.1:8000/api/v1/logout", {}, {
                     withCredentials: true,
                     headers: {
                         Authorization: `Bearer ${token}`
