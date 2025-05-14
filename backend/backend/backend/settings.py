@@ -167,7 +167,7 @@ SIMPLE_JWT = {
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
-    "https://6f33-103-150-218-251.ngrok-free.app",
+    "https://9e25-182-2-5-0.ngrok-free.app",
     "https://cryptocurrency-price-prediction-cyan.vercel.app"
 ]
 
@@ -176,7 +176,7 @@ SESSION_COOKIE_HTTPONLY = True
 
 CSRF_TRUSTED_ORIGINS = [
     "https://*.vercel.app",
-    "https://6f33-103-150-218-251.ngrok-free.app",
+    "https://9e25-182-2-5-0.ngrok-free.app",
 ]
 
 CORS_ALLOW_HEADERS = [
