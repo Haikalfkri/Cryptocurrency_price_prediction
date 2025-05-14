@@ -36,6 +36,8 @@ from django.core.exceptions import ValidationError
 
 from .models import CustomUser
 
+from pycoingecko import CoinGeckoAPI
+
 load_dotenv()
 
 
@@ -44,6 +46,8 @@ load_dotenv()
 matplotlib.use('Agg')
 
 # Authentications
+
+cg = CoinGeckoAPI()
 
 
 def health_check(request):
@@ -225,33 +229,75 @@ def plot_to_base64(fig):
 class fetchCryptoPrediction(APIView):
     def post(self, request):
         try:
-            coin = request.data.get("coin")
-            no_of_days = request.data.get("no_of_days", 2)
+            symbol = request.data.get("coin")  # Contoh: 'BTCUSDT'
+            no_of_days = int(request.data.get("no_of_days", 2))
 
-            # cache key
-            cache_key = f"{coin}_{no_of_days}_prediction"
+            if not symbol:
+                return Response({"error": "Missing coin parameter."}, status=400)
+
+            cache_key = f"{symbol}_{no_of_days}_prediction"
             cached_data = cache.get(cache_key)
-
             if cached_data:
                 return Response(cached_data, status=200)
 
-            # fetch crypto data
-            end = datetime.now()
-            start = datetime(end.year - 10, end.month, end.day)
-            coin_data = yf.download(coin, start=start, end=end)
+            # Get Binance Kline data (daily candles)
+            end_time = int(datetime.now().timestamp() * 1000)
+            start_time = int((datetime.now() - timedelta(days=365 * 10)).timestamp() * 1000)
 
-            # data preparation
+            all_data = []
+            while start_time < end_time:
+                url = "https://api.binance.com/api/v3/klines"
+                params = {
+                    "symbol": symbol.upper(),
+                    "interval": "1d",
+                    "startTime": start_time,
+                    "limit": 1000
+                }
+                response = requests.get(url, params=params)
+                data = response.json()
+
+                if isinstance(data, dict) and data.get("code"):
+                    return Response({"error": data.get("msg", "Failed to fetch Binance data.")}, status=400)
+
+                if not data:
+                    break
+
+                all_data.extend(data)
+                last_time = data[-1][0]
+                start_time = last_time + 24 * 60 * 60 * 1000  # Next day
+
+            # Parse data
+            df = pd.DataFrame(all_data, columns=[
+                'timestamp', 'open', 'high', 'low', 'close', 'volume',
+                'close_time', 'quote_asset_volume', 'num_trades',
+                'taker_buy_base_vol', 'taker_buy_quote_vol', 'ignore'
+            ])
+            df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
+            df.set_index('timestamp', inplace=True)
+            df['Close'] = df['close'].astype(float)
+
+            if df.empty:
+                return Response({"error": "No historical data found for this coin."}, status=400)
+
+            coin_data = df[['Close']]
             splitting_len = int(len(coin_data) * 0.8)
-            x_test = coin_data[['Close']][splitting_len:]
+            x_test = coin_data[["Close"]][splitting_len:]
+
+            if x_test.empty:
+                return Response({"error": "Not enough data to make a prediction."}, status=400)
+
+            # Scale data
             scaler = MinMaxScaler(feature_range=(0, 1))
             scaled_data = scaler.fit_transform(x_test)
 
-            x_data = []
-            y_data = []
             base_days = 100
+            x_data, y_data = [], []
             for i in range(base_days, len(scaled_data)):
                 x_data.append(scaled_data[i-base_days: i])
                 y_data.append(scaled_data[i])
+
+            if not x_data or not y_data:
+                return Response({"error": "Not enough data after scaling to make prediction."}, status=400)
 
             x_data = np.array(x_data)
             y_data = np.array(y_data)
@@ -261,64 +307,54 @@ class fetchCryptoPrediction(APIView):
             inv_predictions = scaler.inverse_transform(predictions)
             inv_y_test = scaler.inverse_transform(y_data)
 
-            x_data = np.array(x_data)
-            y_data = np.array(y_data)
-
-            # prepare data for plotting
             plotting_data = pd.DataFrame({
                 'Original Test Data': inv_y_test.flatten(),
                 'Predicted Test Data': inv_predictions.flatten()
             }, index=x_test.index[base_days:])
 
-
-            # General Plot
-            # Plot 1: Original Closing Prices
+            # Plot 1
             fig1 = plt.figure(figsize=(15, 6))
-            plt.plot(coin_data['Close'], 'b', label='Close Price')
-            plt.title('Closing Price Over Time')
+            plt.plot(coin_data['Close'], label='Close Price')
+            plt.title(f'{symbol.upper()} Closing Price Over Time')
             plt.xlabel('Date')
             plt.ylabel('Close Price')
             plt.legend()
             original_plot = plot_to_base64(fig1)
             plt.close(fig1)
 
-            # plot 2: Original vs Predicted Data
+            # Plot 2
             fig2 = plt.figure(figsize=(15, 6))
-            plt.plot(plotting_data['Original Test Data'],
-                     label='Original Test Data', color='blue', linewidth=2)
-            plt.plot(plotting_data['Predicted Test Data'],
-                     label='Predicted Test Data', color='red', linewidth=2)
+            plt.plot(plotting_data['Original Test Data'], label='Original Test Data', color='blue')
+            plt.plot(plotting_data['Predicted Test Data'], label='Predicted Test Data', color='red')
             plt.legend()
-            plt.title('Original vs Predicted Test Data')
+            plt.title('Original vs Predicted')
             plt.xlabel('Date')
             plt.ylabel('Close Price')
             predicted_plot = plot_to_base64(fig2)
             plt.close(fig2)
 
-            # plot 3 : Future Predictions
-            last_100 = coin_data[['Close']].tail(100)
+            # Predict future prices
+            last_100 = coin_data.tail(100)
             last_100_scaled = scaler.transform(last_100)
+            last_100_scaled = last_100_scaled.reshape(1, -1, 1)
 
             future_predictions = []
-            last_100_scaled = last_100_scaled.reshape(1, -1, 1)
             for _ in range(no_of_days):
                 next_day = model.predict(last_100_scaled)
                 future_predictions.append(scaler.inverse_transform(next_day))
-                last_100_scaled = np.append(
-                    last_100_scaled[:, 1:, :], next_day.reshape(1, 1, -1), axis=1)
+                last_100_scaled = np.append(last_100_scaled[:, 1:, :], next_day.reshape(1, 1, -1), axis=1)
 
             future_predictions = np.array(future_predictions).flatten()
 
-            # price prediction analysis
-            price_analysis_data = price_prediction_analysis(coin, future_predictions)
-
-            # sentiment analysis
-            sentiment_label, recommendation, final_score, summarize = sentiment_and_prediction_analysis(coin, future_predictions)
+            # Analysis
+            price_analysis_data = price_prediction_analysis(symbol, future_predictions)
+            sentiment_label, recommendation, final_score, summarize = sentiment_and_prediction_analysis(
+                symbol, future_predictions)
 
             result = {
                 "original_plot": original_plot,
                 "predicted_plot": predicted_plot,
-                "future_plot": future_predictions,
+                "future_plot": future_predictions.tolist(),
                 "predict_price_analysis": price_analysis_data,
                 "sentiment_label": sentiment_label,
                 "recommendation": recommendation,
@@ -326,9 +362,8 @@ class fetchCryptoPrediction(APIView):
                 "summarize": summarize,
             }
 
-            # cache the result
-            cache.set(cache_key, result, timeout=60 * 60)
-
+            # Cache result
+            cache.set(cache_key, result, timeout=3600)
             return Response(result, status=200)
 
         except Exception as e:

@@ -10,20 +10,6 @@
 
     <div v-if="originalPlot" class="w-full max-w-5xl flex flex-col items-center space-y-10 mt-20">
 
-      <!-- Original Price Chart -->
-      <div class="w-full">
-        <h2 class="text-xl font-semibold text-center mb-4">Original Price Chart</h2>
-        <img :src="originalPlot" alt="Original Chart"
-          class="w-full rounded-2xl shadow-lg transition-transform hover:scale-105" />
-      </div>
-
-      <!-- Predicted Price Chart -->
-      <div class="w-full">
-        <h2 class="text-xl font-semibold text-center mb-4">Predicted Price Chart</h2>
-        <img :src="predictedPlot" alt="Predicted Chart"
-          class="w-full rounded-2xl shadow-lg transition-transform hover:scale-105" />
-      </div>
-
       <!-- Future Chart -->
       <div class="w-full">
         <h2 class="text-xl font-semibold text-center mb-4">Future Price Predictions (Chart)</h2>
@@ -32,7 +18,7 @@
         </div>
       </div>
 
-      <!-- Prediction Table -->
+      <!-- Predicted Analysis (Table) -->
       <div class="w-full">
         <h2 class="text-xl font-semibold text-center mb-4">Predicted Analysis (Table)</h2>
         <div class="overflow-x-auto bg-white rounded-2xl shadow-lg">
@@ -85,7 +71,6 @@
           </div>
         </div>
 
-
         <!-- Summary -->
         <div class="w-full bg-white text-left rounded-2xl shadow-lg p-6">
           <h3 class="text-xl font-semibold mb-4">Summary</h3>
@@ -93,9 +78,25 @@
         </div>
       </div>
 
+      <!-- Original Price Chart -->
+      <div class="w-full mt-10">
+        <h2 class="text-xl font-semibold text-center mb-4">Original Price Chart</h2>
+        <img :src="originalPlot" alt="Original Chart"
+          class="w-full rounded-2xl shadow-lg transition-transform hover:scale-105" />
+      </div>
+
+      <!-- Predicted Price Chart -->
+      <div class="w-full mt-10">
+        <h2 class="text-xl font-semibold text-center mb-4">Predicted Price Chart</h2>
+        <img :src="predictedPlot" alt="Predicted Chart"
+          class="w-full rounded-2xl shadow-lg transition-transform hover:scale-105" />
+      </div>
+
     </div>
   </div>
 </template>
+
+
 
 <script>
 import Chart from 'chart.js/auto';

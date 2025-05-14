@@ -53,14 +53,12 @@
                 <thead>
                     <tr>
                         <th class="text-left">ID</th>
-                        <th class="text-right">Price (USD)</th>
                         <th class="text-right">Rank</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="coin in marketCapRanking" :key="coin.id">
                         <td class="text-left">{{ coin.id }}</td>
-                        <td class="text-right">${{ coin.current_price.toLocaleString() }}</td>
                         <td class="text-right">{{ coin.market_cap_rank }}</td>
                     </tr>
                 </tbody>
