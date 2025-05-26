@@ -13,7 +13,11 @@ urlpatterns = [
     path('fetchCryptoChart/', FetchCryptoChart.as_view(), name='fetch-crypto-chart'),
     path('predictedCryptoData/', fetchCryptoPrediction.as_view(), name='predicted-crypto-data'),
     path('cryptoList/', CryptoListView.as_view(), name='crypto-list'),
+
+    # news
     path('cryptoNewsList/', CryptoNewsListView.as_view(), name='crypto-news-list'),
+    path('cryptoInsightList/', CryptoInsightNewsListView.as_view(), name='crypto-insight-list'),
+    path('cryptoPressRelease/', CryptoPressReleaseListView.as_view(), name='crypto-press-release'),
 
     # Coins
     path('topVolumeCoin/', TopVolumeCoinView.as_view(), name='top-volume-coin'),
