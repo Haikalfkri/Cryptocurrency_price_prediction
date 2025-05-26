@@ -1,106 +1,168 @@
 <template>
-    <div class="w-full max-w-3xl mt-6">
-        <h2 class="text-lg font-bold text-gray-900">Price Chart</h2>
-
-        <!-- Period Selection -->
-        <div class="mb-4 flex gap-2 justify-end">
-            <button v-for="option in periodOptions" :key="option.value"
-                @click="selectedPeriod = option.value"
-                :class="['px-4 py-2 text-md rounded-md',
-                    selectedPeriod === option.value ? 'bg-blue-600 text-white' : 'bg-gray-200']">
-                {{ option.label }}
-            </button>
-        </div>
-
-        <!-- Chart Loading & Error -->
-        <div v-if="loading" class="text-gray-600">Loading chart...</div>
-        <div v-else-if="error" class="text-red-500">{{ error }}</div>
-
-        <!-- Chart -->
-        <div v-else class="bg-white p-4 rounded-lg shadow-md">
-            <LineChart v-if="chartData" :chart-data="chartData" :chart-options="chartOptions" />
-        </div>
+    <div class="w-full max-w-full">
+      <!-- Period Selection -->
+      <div class="mb-2 flex gap-1 justify-end flex-wrap">
+        <button
+          v-for="option in periodOptions"
+          :key="option.value"
+          @click="selectedPeriod = option.value"
+          :class="[
+            'px-4 py-2 text-sm rounded-md',
+            selectedPeriod === option.value ? 'bg-blue-600 text-white' : 'bg-gray-200',
+          ]"
+        >
+          {{ option.label }}
+        </button>
+      </div>
+  
+      <!-- Chart Loading & Error -->
+      <div v-if="loading" class="text-gray-600">Loading chart...</div>
+      <div v-else-if="error" class="text-red-500">{{ error }}</div>
+  
+      <!-- Chart -->
+      <div v-else class="bg-white rounded-lg w-full">
+        <apexchart
+          type="area"
+          :height="chartHeight"
+          :options="chartOptions"
+          :series="series"
+          class="w-full"
+        />
+      </div>
     </div>
-</template>
-
-<script>
-import { defineComponent, ref, watch, onMounted } from "vue";
-import { LineChart } from "vue-chart-3";
-import { Chart as ChartJS, Title, Tooltip, Legend, LineElement, PointElement, CategoryScale, LinearScale, LineController } from "chart.js";
-import axios from "axios";
-
-axios.defaults.headers.common["ngrok-skip-browser-warning"] = true;
-
-// ✅ Register necessary Chart.js components including LineController
-ChartJS.register(LineController, Title, Tooltip, Legend, LineElement, PointElement, CategoryScale, LinearScale);
-
-export default defineComponent({
+  </template>
+  
+  <script>
+  import { defineComponent, ref, watch, onMounted, computed } from "vue";
+  import axios from "axios";
+  
+  axios.defaults.headers.common["ngrok-skip-browser-warning"] = true;
+  
+  export default defineComponent({
     name: "CryptoChart",
-    components: { LineChart },
     props: {
-        coin: String, // Coin name (e.g., 'bitcoin')
+      coin: {
+        type: String,
+        required: true,
+      },
     },
     setup(props) {
-        const chartData = ref(null);
-        const loading = ref(true);
-        const error = ref(null);
-        const selectedPeriod = ref("week"); // Default period
-
-        const periodOptions = [
-            { label: "7D", value: "week" },
-            { label: "1M", value: "month" },
-            // { label: "All Time", value: "max" },
-        ];
-
-        const chartOptions = {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    callbacks: {
-                        label: (tooltipItem) => `$${tooltipItem.raw.toFixed(2)}`,
-                    },
-                },
+      const series = ref([]);
+      const chartOptions = ref({});
+      const loading = ref(true);
+      const error = ref(null);
+      const selectedPeriod = ref("week");
+  
+      const periodOptions = [
+        { label: "7D", value: "week" },
+        { label: "1M", value: "month" },
+      ];
+  
+      const fetchChartData = async () => {
+        loading.value = true;
+        error.value = null;
+        try {
+          const response = await axios.post(
+            "http://127.0.0.1:8000/api/v1/fetchCryptoChart/",
+            {
+              coin: props.coin,
+              period: selectedPeriod.value,
             },
-            scales: {
-                x: { title: { display: true, text: "Date" } },
-                y: { title: { display: true, text: "Price (USD)" }, beginAtZero: false },
-            },
-        };
-
-        const fetchChartData = async () => {
-            loading.value = true;
-            error.value = null;
-            try {
-                const response = await axios.post("http://127.0.0.1:8000/api/v1/fetchCryptoChart/", {
-                    coin: props.coin,
-                    period: selectedPeriod.value,
-                },
-                {
-                    withCredentials: true
-                }
-            );
-
-                const prices = response.data.chart;
-                const labels = prices.map(item => new Date(item[0]).toLocaleDateString());
-                const dataPoints = prices.map(item => item[1]);
-
-                chartData.value = {
-                    labels,
-                    datasets: [{ label: "Price (USD)", data: dataPoints, borderColor: "#4CAF50", backgroundColor: "rgba(76, 175, 80, 0.2)", fill: true }]
-                };
-            } catch (err) {
-                error.value = "Failed to load chart data.";
-            } finally {
-                loading.value = false;
+            {
+              withCredentials: true,
             }
-        };
-
-        watch(selectedPeriod, fetchChartData);
-        onMounted(fetchChartData);
-
-        return { chartData, chartOptions, loading, error, selectedPeriod, periodOptions };
+          );
+  
+          const prices = response.data.chart;
+  
+          series.value = [
+            {
+              name: "Price (USD)",
+              data: prices,
+            },
+          ];
+  
+          chartOptions.value = {
+            chart: {
+              type: "area",
+              zoom: {
+                enabled: false,
+              },
+              toolbar: {
+                show: false,
+              },
+              dropShadow: {
+                enabled: false,
+              },
+            },
+            dataLabels: {
+              enabled: false,
+            },
+            stroke: {
+              curve: "smooth",
+              width: 2,
+              dropShadow: {
+                enabled: false,
+              },
+            },
+            xaxis: {
+              type: "datetime",
+              labels: {
+                rotate: -45,
+                datetimeUTC: false,
+                format: "dd MMM",
+              },
+            },
+            yaxis: {
+              labels: {
+                formatter: (val) => `$${val.toFixed(2)}`,
+              },
+            },
+            tooltip: {
+              x: {
+                format: "dd MMM yyyy",
+              },
+            },
+            fill: {
+              type: "gradient",
+              gradient: {
+                shadeIntensity: 1,
+                opacityFrom: 1,
+                opacityTo: 1,
+                stops: [0, 90, 100],
+              },
+              dropShadow: {
+                enabled: false,
+              },
+            },
+            colors: ["#4F46E5"],
+          };
+        } catch (err) {
+          error.value = "Failed to load chart data.";
+        } finally {
+          loading.value = false;
+        }
+      };
+  
+      watch(selectedPeriod, fetchChartData);
+      onMounted(fetchChartData);
+  
+      // Responsively adjust chart height
+      const chartHeight = computed(() => {
+        // Kalau layar kecil, lebih pendek
+        return window.innerWidth < 640 ? 250 : 350;
+      });
+  
+      return {
+        series,
+        chartOptions,
+        loading,
+        error,
+        selectedPeriod,
+        periodOptions,
+        chartHeight,
+      };
     },
-});
-</script>
+  });
+  </script>
+  

@@ -19,6 +19,8 @@ from .serializers import LoginSerializer, RegisterSerializer, CryptoSymbolSerial
 from django.contrib.auth import authenticate
 from django.core.cache import cache
 
+from concurrent.futures import ThreadPoolExecutor
+
 from newsapi import NewsApiClient
 
 import os
@@ -158,15 +160,26 @@ class FetchCryptoData(APIView):
             data = response.json()
             coin_data = {
                 "Price": data["market_data"]["current_price"]["usd"],
+                "PriceChangePercentage": data["market_data"].get("price_change_percentage_24h"),
                 "MarketCap": data["market_data"]["market_cap"]["usd"],
+                "MarketCapChangePercentage": data["market_data"].get("market_cap_change_percentage_24h"),
                 "Volume24h": data["market_data"]["total_volume"]["usd"],
                 "FDV": data["market_data"].get("fully_diluted_valuation", {}).get("usd"),
                 "TotalSupply": data["market_data"].get("total_supply"),
                 "MaxSupply": data["market_data"].get("max_supply"),
                 "CirculatingSupply": data["market_data"].get("circulating_supply"),
-                "MarketCapChangePercentage": data["market_data"].get("market_cap_change_percentage_24h"),
-                "Description": data["description"].get("en", "")
+                "Rank": data.get("market_cap_rank"),
+                "ATH": data["market_data"]["ath"]["usd"],
+                "ATHChangePercentage": data["market_data"]["ath_change_percentage"]["usd"],
+                "ATHDate": data["market_data"]["ath_date"]["usd"],
+                "ATL": data["market_data"]["atl"]["usd"],
+                "ATLChangePercentage": data["market_data"]["atl_change_percentage"]["usd"],
+                "ATLDate": data["market_data"]["atl_date"]["usd"],
+                "Homepage": data["links"]["homepage"][0] if data["links"]["homepage"] else None,
+                "Explorer": data["links"]["blockchain_site"][0] if data["links"]["blockchain_site"] else None,
+                "Description": data["description"].get("en", ""),
             }
+
 
             cache.set(cache_key, coin_data, timeout=7200)
             return Response(coin_data, status=200)
@@ -446,42 +459,6 @@ class TopExchangesView(APIView):
         return Response(top_exchanges)
     
 
-
-class CryptoNewsListView(APIView):
-    def get(self, request):
-        cached_data = cache.get('crypto_news_list')
-        if cached_data:
-            return Response(cached_data)
-        
-        newsapi = NewsApiClient(api_key=os.getenv('NEWS_API_KEY'))
-
-        all_articles = newsapi.get_everything(
-            q='cryptocurrency',
-            language='en',
-            sort_by='publishedAt',
-            page_size=20
-        )
-
-        news_data = []
-        for article in all_articles.get('articles', []):
-            title = article.get('title')
-            description = article.get('description', '')
-            full_text = f"{title}. {description}"
-
-            newsAnalyze = news_analyze(full_text)
-
-            news_data.append({
-                'title': article.get('title'),
-                'image': article.get('urlToImage'),
-                'link': article.get('url'),
-                'analyze': newsAnalyze
-            })
-
-        cache.set('crypto_news_list', news_data, 3600)
-
-        return Response(news_data)
-    
-
 # Crypto List
 class CryptoListView(APIView):
     def get(self, request):
@@ -512,3 +489,129 @@ class UserFeedbackView(APIView):
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
+
+
+class CryptoNewsListView(APIView):
+    def get(self, request):
+        cached_data = cache.get('crypto_news_list')
+        if cached_data:
+            return Response(cached_data)
+
+        newsapi = NewsApiClient(api_key=os.getenv('NEWS_API_KEY'))
+
+        all_articles = newsapi.get_everything(
+            q='cryptocurrency',
+            language='en',
+            sort_by='publishedAt',
+            page_size=8
+        )
+
+        articles = all_articles.get('articles', [])
+
+        def process_article(article):
+            title = article.get('title') or ''
+            description = article.get('description') or ''
+            full_text = f"{title}. {description}".strip()
+
+            if not full_text:
+                return None
+
+            analysis = news_analyze(full_text)
+            return {
+                'title': title,
+                'image': article.get('urlToImage'),
+                'link': article.get('url'),
+                'date': article.get('publishedAt'),
+                'sentiment': analysis.get('sentiment'),
+                'summary': analysis.get('summary')
+            }
+
+        # 🔁 Run sentiment analysis in parallel
+        with ThreadPoolExecutor() as executor:
+            news_data = list(filter(None, executor.map(process_article, articles)))
+
+        cache.set('crypto_news_list', news_data, 3600)
+        return Response(news_data)
+
+
+class CryptoInsightNewsListView(APIView):
+    def get(self, request):
+        cached_data = cache.get('crypto_insight_news')
+        if cached_data:
+            return Response(cached_data)
+
+        api_token = os.getenv('CRYPTOPANIC_API_KEY')  # Simpan key di .env
+        url = f'https://cryptopanic.com/api/v1/posts/?auth_token={api_token}&filter=important&kind=media'
+
+        try:
+            response = requests.get(url)
+            response.raise_for_status()
+            data = response.json()
+        except Exception as e:
+            return Response({"error": "Failed to fetch data from CryptoPanic", "details": str(e)}, status=500)
+
+        articles = data.get('results', [])
+
+        def process_article(article):
+            title = article.get('title') or ''
+            full_text = title
+            if not full_text:
+                return None
+
+            return {
+                'title': title,
+                'link': article.get('url'),
+                'date': article.get('published_at'),
+                'votes': article.get('votes', {}),
+                'tags': article.get('tags', []),
+                'source': article.get('domain')
+            }
+
+        with ThreadPoolExecutor() as executor:
+            insight_data = list(filter(None, executor.map(process_article, articles)))
+
+        cache.set('crypto_insight_news', insight_data, 3600)
+        return Response(insight_data)
+
+
+
+class CryptoPressReleaseListView(APIView):
+    def get(self, request):
+        cached_data = cache.get('crypto_press_release')
+        if cached_data:
+            return Response(cached_data)
+
+        newsapi = NewsApiClient(api_key=os.getenv('NEWS_API_KEY'))
+
+        press_articles = newsapi.get_everything(
+            q='cryptocurrency press release OR crypto announcement',
+            language='en',
+            sort_by='publishedAt',
+            page_size=5
+        )
+
+        articles = press_articles.get('articles', [])
+
+        def process_article(article):
+            title = article.get('title') or ''
+            description = article.get('description') or ''
+            full_text = f"{title}. {description}".strip()
+
+            if not full_text:
+                return None
+
+            # analysis = news_analyze(full_text)
+            return {
+                'title': title,
+                'image': article.get('urlToImage'),
+                'link': article.get('url'),
+                'date': article.get('publishedAt'),
+                # 'sentiment': analysis.get('sentiment'),
+                # 'summary': analysis.get('summary')
+            }
+
+        with ThreadPoolExecutor() as executor:
+            press_data = list(filter(None, executor.map(process_article, articles)))
+
+        cache.set('crypto_press_release', press_data, 3600)
+        return Response(press_data)
