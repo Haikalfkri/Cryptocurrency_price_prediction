@@ -8,14 +8,21 @@
                         Prediction</span>
                 </a>
                 <ul class="hidden md:flex space-x-6 text-sm font-medium">
-                    <li><router-link to="/cryptoPage" class="text-gray-900 hover:text-blue-700">Crypto</router-link></li>
-                    <li><router-link to="/predictPage" class="text-gray-900 hover:text-blue-700">Predict</router-link></li>
-                    <li v-if="role === 'user'"><router-link to="/UserAboutUsPage" class="text-gray-900 hover:text-blue-700">About Us</router-link></li>
+                    <li><router-link to="/cryptoPage" class="text-gray-900 hover:text-blue-700">Crypto</router-link>
+                    </li>
+                    <li><router-link to="/CryptoNewsPage" class="text-gray-900 hover:text-blue-700">News</router-link>
+                    </li>
+                    <li><router-link to="/CryptoInsight" class="text-gray-900 hover:text-blue-700">Insights</router-link>
+                    </li>
+                    <li><router-link to="/predictPage" class="text-gray-900 hover:text-blue-700">Predict</router-link>
+                    </li>
+                    <li v-if="role === 'user'"><router-link to="/UserAboutUsPage"
+                            class="text-gray-900 hover:text-blue-700">About Us</router-link></li>
 
-                    <li v-if="role === 'admin'"><a href="#"
-                            class="text-gray-900 hover:text-blue-700">User Management</a></li>
-                    <li v-if="role === 'admin'"><a href="#"
-                            class="text-gray-900 hover:text-blue-700">User Feedbacks</a></li>
+                    <li v-if="role === 'admin'"><a href="#" class="text-gray-900 hover:text-blue-700">User
+                            Management</a></li>
+                    <li v-if="role === 'admin'"><a href="#" class="text-gray-900 hover:text-blue-700">User Feedbacks</a>
+                    </li>
                 </ul>
             </div>
 
@@ -30,8 +37,7 @@
                             src="https://img.freepik.com/free-vector/smiling-young-man-illustration_1308-174401.jpg"
                             alt="user photo">
                     </button>
-                    <div v-show="isDropdownOpen"
-                        class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-md">
+                    <div v-show="isDropdownOpen" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-md">
                         <div class="px-4 py-3">
                             <span class="block text-sm text-gray-900">{{ username }}</span>
                             <span class="block text-sm text-gray-900">{{ email }}</span>
@@ -61,16 +67,19 @@
         <!-- Mobile Menu -->
         <div v-show="isMobileMenuOpen" class="md:hidden px-4 pb-4">
             <ul class="space-y-2 text-sm font-medium">
-                <li><router-link to="/cryptoPage"
-                        class="block text-gray-900 hover:text-blue-700">Crypto</router-link></li>
-                <li><router-link to="/predictPage"
-                        class="block text-gray-900 hover:text-blue-700">Predict</router-link></li>
-                <li v-if="role === 'user'"><router-link to="/UserAboutUsPage" class="block text-gray-900 hover:text-blue-700">About Us</router-link></li>
+                <li><router-link to="/cryptoPage" class="block text-gray-900 hover:text-blue-700">Crypto</router-link>
+                </li>
+                <li><router-link to="/CryptoNewsPage" class="block text-gray-900 hover:text-blue-700">News</router-link>
+                </li>
+                <li><router-link to="/predictPage" class="block text-gray-900 hover:text-blue-700">Predict</router-link>
+                </li>
+                <li v-if="role === 'user'"><router-link to="/UserAboutUsPage"
+                        class="block text-gray-900 hover:text-blue-700">About Us</router-link></li>
 
-                <li v-if="role === 'admin'"><a href="#"
-                        class="block text-gray-900 hover:text-blue-700">User Management</a></li>
-                <li v-if="role === 'admin'"><a href="#"
-                        class="block text-gray-900 hover:text-blue-700">Feedbacks</a></li>
+                <li v-if="role === 'admin'"><a href="#" class="block text-gray-900 hover:text-blue-700">User
+                        Management</a></li>
+                <li v-if="role === 'admin'"><a href="#" class="block text-gray-900 hover:text-blue-700">Feedbacks</a>
+                </li>
             </ul>
         </div>
     </nav>
