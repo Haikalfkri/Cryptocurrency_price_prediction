@@ -10,7 +10,12 @@ import PredictPage from "@/views/all/PredictPage.vue";
 import CryptoDetailPage from "@/views/all/CryptoDetailPage.vue";
 import CryptoPredictionPage from "@/views/all/CryptoPredictionPage.vue";
 
+import CryptoNewsPage from "@/views/all/CryptoNewsPage.vue";
+import CryptoInsightPage from "@/views/all/CryptoInsightPage.vue";
+
 import UserAboutUsPage from "@/views/user/UserAboutUsPage.vue";
+
+
 
 const routes = [
     // auth
@@ -45,7 +50,18 @@ const routes = [
         component: RegisterPage
     },
 
-    // admin
+    {
+        path: "/CryptoNewsPage",
+        name: "CryptoNewsPage",
+        component: CryptoNewsPage,
+        meta: { requiresAuth: true }
+    },
+    {
+      path: "/CryptoInsight",
+      name: "CryptoInsight",
+      component: CryptoInsightPage,
+      meta: { requiresAuth: true }  
+    },
     {
         path: "/CryptoDetailPage",
         name: "CryptoDetailpage",
