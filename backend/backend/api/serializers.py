@@ -56,3 +56,9 @@ class CryptoNewsSerializer(serializers.ModelSerializer):
         fields = [
             'title', 'description', 'summary', 'sentiment', 'image', 'link', 'published_at'
         ]
+
+
+class CryptoInsightSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CryptoInsight
+        fields = ['title', 'link', 'date', 'source', 'image', 'category']

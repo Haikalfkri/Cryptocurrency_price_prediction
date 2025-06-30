@@ -86,3 +86,14 @@ class CryptoNews(models.Model):
         return self.title
     
 
+# crypto insight news
+class CryptoInsight(models.Model):
+    title = models.CharField(max_length=255)
+    link = models.URLField(max_length=512)
+    date = models.DateTimeField(null=True, blank=True)
+    source = models.CharField(max_length=255)
+    image = models.URLField(null=True, blank=True)
+    category = models.CharField(max_length=50, default='GENERAL')  # Nama coin seperti BTC, ETH, dll
+
+    def __str__(self):
+        return f"{self.category} - {self.title[:100]}"
