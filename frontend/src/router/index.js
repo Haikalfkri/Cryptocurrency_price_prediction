@@ -28,9 +28,9 @@ const routes = [
 
             if(token) {
                 if (role == 'user') {
-                    next('/cryptoPage');
+                    next('/CryptoNewsPage');
                 } else if (role == 'admin') {
-                    next('/cryptoPage');
+                    next('/CryptoNewsPage');
                 } else {
                     next('/');
                 }

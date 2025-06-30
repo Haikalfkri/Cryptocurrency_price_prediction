@@ -508,48 +508,6 @@ class CryptoNewsListView(APIView):
 # Crypto Insight
 class CryptoInsightNewsListView(APIView):
     def get(self, request):
-        cached_data = cache.get('crypto_insight_news')
-        if cached_data:
-            return Response(cached_data)
-
-        api_key = os.getenv('CRYPTOCOMPARE_API_KEY')
-        categories = 'BTC,ETH,USDT,BNB,SOL,XRP,DOGE,TON,ADA,AVAX'
-        url = f'https://min-api.cryptocompare.com/data/v2/news/?lang=EN&categories={categories}&api_key={api_key}&limit=100'
-
-        session = requests.Session()
-
-        try:
-            response = session.get(url, timeout=10)
-            response.raise_for_status()
-            data = response.json()
-        except Exception as e:
-            return Response({"error": "Failed to fetch data from CryptoCompare", "details": str(e)}, status=500)
-
-        articles = data.get('Data', [])
-
-        def process_article(article):
-            title = article.get('title') or ''
-            if not title:
-                return None
-
-            # fallback jika published_on tidak ada atau 0
-            published_on = article.get('published_on')
-            try:
-                date = datetime.utcfromtimestamp(published_on).isoformat() if published_on else None
-            except Exception:
-                date = None
-
-            return {
-                'title': title,
-                'link': article.get('url'),
-                'date': date,
-                'source': article.get('source'),
-                'tags': article.get('tags', ''),
-                'image': article.get('imageurl') or None
-            }
-
-        with ThreadPoolExecutor() as executor:
-            insight_data = list(filter(None, executor.map(process_article, articles)))
-
-        cache.set('crypto_insight_news', insight_data, 3600)
-        return Response(insight_data)
+        queryset = CryptoInsight.objects.all().order_by('-date')[:100]
+        serializer = CryptoInsightSerializer(queryset, many=True)
+        return Response(serializer.data)
