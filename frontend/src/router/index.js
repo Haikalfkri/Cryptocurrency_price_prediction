@@ -50,6 +50,7 @@ const routes = [
         component: RegisterPage
     },
 
+
     {
         path: "/CryptoNewsPage",
         name: "CryptoNewsPage",
@@ -62,6 +63,8 @@ const routes = [
       component: CryptoInsightPage,
       meta: { requiresAuth: true }  
     },
+
+
     {
         path: "/CryptoDetailPage",
         name: "CryptoDetailpage",

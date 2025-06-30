@@ -17,7 +17,6 @@ urlpatterns = [
     # news
     path('cryptoNewsList/', CryptoNewsListView.as_view(), name='crypto-news-list'),
     path('cryptoInsightList/', CryptoInsightNewsListView.as_view(), name='crypto-insight-list'),
-    path('cryptoPressRelease/', CryptoPressReleaseListView.as_view(), name='crypto-press-release'),
 
     # Coins
     path('topVolumeCoin/', TopVolumeCoinView.as_view(), name='top-volume-coin'),
