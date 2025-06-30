@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 
-from .models import CryptoSymbols, UserFeedback
+from .models import *
 
 User = get_user_model()
 
@@ -48,3 +48,11 @@ class UserFeedbackSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserFeedback
         fields = '__all__'
+
+
+class CryptoNewsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CryptoNews
+        fields = [
+            'title', 'description', 'summary', 'sentiment', 'image', 'link', 'published_at'
+        ]

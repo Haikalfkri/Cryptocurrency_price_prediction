@@ -11,7 +11,7 @@ class Role(models.Model):
     def __str__(self):
         return self.name
 
-# Custom User
+# Custom User manager
 class CustomUserManager(BaseUserManager):
     def create_user(self, username, email, password=None, role=None):
         if not email:
@@ -37,6 +37,7 @@ class CustomUserManager(BaseUserManager):
         return user
 
 
+# custom user
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(max_length=50, unique=True)
     email = models.EmailField(unique=True)
@@ -53,6 +54,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         return self.email
     
 
+# crypto symbol from binance
 class CryptoSymbols(models.Model):
     name = models.CharField(max_length=50)
 
@@ -60,6 +62,7 @@ class CryptoSymbols(models.Model):
         return self.name
 
 
+# user feedback
 class UserFeedback(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True)
     feedback = models.CharField(max_length=255, blank=True)
@@ -67,3 +70,19 @@ class UserFeedback(models.Model):
 
     def __str__(self):
         return self.user.email
+    
+
+# crypto news
+class CryptoNews(models.Model):
+    title = models.CharField(max_length=1024)
+    description = models.TextField(blank=True, null=True)
+    summary = models.TextField(blank=True, null=True)
+    sentiment = models.CharField(max_length=512)
+    image = models.URLField(blank=True, null=True, max_length=1024)
+    link = models.URLField(unique=True, max_length=1024)
+    published_at = models.DateTimeField()
+
+    def __str__(self):
+        return self.title
+    
+

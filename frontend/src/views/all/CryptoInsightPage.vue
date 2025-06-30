@@ -89,7 +89,7 @@
         newsList: [],
         currentPage: 1,
         pageSize: 12,
-        categories: ['BTC','ETH','USDT','BNB','SOL','XRP','DOGE','TON','ADA','AVAX'],
+        categories: ['BTC','ETH','USDT','BNB','SOL','XRP','DOGE','TON','ADA','AVAX', 'Bitcoin', 'Solana'],
       };
     },
     computed: {
@@ -132,10 +132,12 @@
       tagColorClass(tag) {
         const colors = {
           BTC: 'bg-yellow-500',
+          Bitcoin: 'bg-yellow-500',
           ETH: 'bg-purple-600',
           USDT: 'bg-green-500',
           BNB: 'bg-yellow-400',
           SOL: 'bg-cyan-500',
+          Solana: 'bg-cyan-500',
           XRP: 'bg-blue-600',
           DOGE: 'bg-orange-400',
           TON: 'bg-gray-600',

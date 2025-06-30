@@ -15,7 +15,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
-from .serializers import LoginSerializer, RegisterSerializer, CryptoSymbolSerializer, UserFeedbackSerializer
+from .serializers import *
 from django.contrib.auth import authenticate
 from django.core.cache import cache
 
@@ -36,7 +36,7 @@ from api.models import CryptoSymbols
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 
-from .models import CustomUser
+from .models import *
 
 from pycoingecko import CoinGeckoAPI
 
@@ -498,42 +498,11 @@ class CryptoNewsListView(APIView):
         cached_data = cache.get('crypto_news_list')
         if cached_data:
             return Response(cached_data)
-
-        newsapi = NewsApiClient(api_key=os.getenv('NEWS_API_KEY'))
-
-        all_articles = newsapi.get_everything(
-            q='cryptocurrency',
-            language='en',
-            sort_by='publishedAt',
-            page_size=100
-        )
-
-        articles = all_articles.get('articles', [])
-
-        def process_article(article):
-            title = article.get('title') or ''
-            description = article.get('description') or ''
-            full_text = f"{title}. {description}".strip()
-
-            if not full_text:
-                return None
-
-            # analysis = news_analyze(full_text)
-            return {
-                'title': title,
-                'image': article.get('urlToImage'),
-                'link': article.get('url'),
-                'date': article.get('publishedAt'),
-                # 'sentiment': analysis.get('sentiment'),
-                # 'summary': analysis.get('summary')
-            }
-
-        # 🔁 Run sentiment analysis in parallel
-        with ThreadPoolExecutor() as executor:
-            news_data = list(filter(None, executor.map(process_article, articles)))
-
-        cache.set('crypto_news_list', news_data, 3600)
-        return Response(news_data)
+        
+        news_qs = CryptoNews.objects.order_by('-published_at')[:100]
+        serializer = CryptoNewsSerializer(news_qs, many=True)
+        cache.set('crypto_news_list', serializer.data, 3600)
+        return Response(serializer.data)
 
 
 # Crypto Insight
@@ -545,10 +514,12 @@ class CryptoInsightNewsListView(APIView):
 
         api_key = os.getenv('CRYPTOCOMPARE_API_KEY')
         categories = 'BTC,ETH,USDT,BNB,SOL,XRP,DOGE,TON,ADA,AVAX'
-        url = f'https://min-api.cryptocompare.com/data/v2/news/?lang=EN&categories={categories}&api_key={api_key}'
+        url = f'https://min-api.cryptocompare.com/data/v2/news/?lang=EN&categories={categories}&api_key={api_key}&limit=100'
+
+        session = requests.Session()
 
         try:
-            response = requests.get(url)
+            response = session.get(url, timeout=10)
             response.raise_for_status()
             data = response.json()
         except Exception as e:
@@ -561,13 +532,20 @@ class CryptoInsightNewsListView(APIView):
             if not title:
                 return None
 
+            # fallback jika published_on tidak ada atau 0
+            published_on = article.get('published_on')
+            try:
+                date = datetime.utcfromtimestamp(published_on).isoformat() if published_on else None
+            except Exception:
+                date = None
+
             return {
                 'title': title,
                 'link': article.get('url'),
-                'date': datetime.utcfromtimestamp(article.get('published_on')).isoformat(),
+                'date': date,
                 'source': article.get('source'),
                 'tags': article.get('tags', ''),
-                'image': f"{article.get('imageurl')}" if article.get('imageurl') else None
+                'image': article.get('imageurl') or None
             }
 
         with ThreadPoolExecutor() as executor:
@@ -575,88 +553,3 @@ class CryptoInsightNewsListView(APIView):
 
         cache.set('crypto_insight_news', insight_data, 3600)
         return Response(insight_data)
-
-
-# Crypto Press Release
-class CryptoPressReleaseListView(APIView):
-    def get(self, request):
-        cached_data = cache.get('crypto_press_release')
-        if cached_data:
-            return Response(cached_data)
-
-        newsapi = NewsApiClient(api_key=os.getenv('NEWS_API_KEY'))
-
-        press_articles = newsapi.get_everything(
-            q='cryptocurrency press release OR crypto announcement',
-            language='en',
-            sort_by='publishedAt',
-            page_size=5
-        )
-
-        articles = press_articles.get('articles', [])
-
-        def process_article(article):
-            title = article.get('title') or ''
-            description = article.get('description') or ''
-            full_text = f"{title}. {description}".strip()
-
-            if not full_text:
-                return None
-
-            # analysis = news_analyze(full_text)
-            return {
-                'title': title,
-                'image': article.get('urlToImage'),
-                'link': article.get('url'),
-                'date': article.get('publishedAt'),
-                # 'sentiment': analysis.get('sentiment'),
-                # 'summary': analysis.get('summary')
-            }
-
-        with ThreadPoolExecutor() as executor:
-            press_data = list(filter(None, executor.map(process_article, articles)))
-
-        cache.set('crypto_press_release', press_data, 3600)
-        return Response(press_data)
-
-
-# Crypto Regulation News
-class CryptoRegulationNewsView(APIView):
-    def get(self, request):
-        cached_data = cache.get('crypto_regulation_news')
-        if cached_data:
-            return Response(cached_data)
-
-        newsapi = NewsApiClient(api_key=os.getenv('NEWS_API_KEY'))
-
-        try:
-            regulation_articles = newsapi.get_everything(
-                q='cryptocurrency regulation OR crypto law OR crypto policy OR crypto ban',
-                language='en',
-                sort_by='publishedAt',
-                page_size=8
-            )
-        except Exception as e:
-            return Response({"error": "Failed to fetch regulation news", "details": str(e)}, status=500)
-
-        articles = regulation_articles.get('articles', [])
-
-        def process_article(article):
-            title = article.get('title') or ''
-            description = article.get('description') or ''
-            full_text = f"{title}. {description}".strip()
-            if not full_text:
-                return None
-
-            return {
-                'title': title,
-                'image': article.get('urlToImage'),
-                'link': article.get('url'),
-                'date': article.get('publishedAt')
-            }
-
-        with ThreadPoolExecutor() as executor:
-            regulation_news = list(filter(None, executor.map(process_article, articles)))
-
-        cache.set('crypto_regulation_news', regulation_news, 3600)
-        return Response(regulation_news)

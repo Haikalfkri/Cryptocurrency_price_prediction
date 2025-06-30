@@ -164,9 +164,15 @@ def news_analyze(text):
     )
 
     result = response.choices[0].message.content.strip()
+    print("GPT Response:", result)  # ✅ for debugging
 
     try:
         parsed = json.loads(result)
+        sentiment = parsed.get("sentiment", "Neutral").capitalize()
+        if sentiment not in ["Good", "Neutral", "Bad"]:
+            sentiment = "Neutral"
+        summary = parsed.get("summary", "No summary provided.")
+        parsed = {"sentiment": sentiment, "summary": summary}
     except json.JSONDecodeError:
         parsed = {"sentiment": "Neutral", "summary": "Could not summarize."}
 
