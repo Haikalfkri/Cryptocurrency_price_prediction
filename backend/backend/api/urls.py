@@ -23,6 +23,9 @@ urlpatterns = [
     path('trendingCoin/', TrendingCoinView.as_view(), name='trending-coin-view'),
     path('marketCapRankings/', MarketCapRankingView.as_view(), name='market-cap'),
     path('topExchangesRankings/', TopExchangesView.as_view(), name='top-exchanges'),
+    path('allCoinDetailList/', AllCoinDetailListView.as_view(), name='all-coin-detail-list'),
+    path('coin/<str:coin_symbol>/', CoinDetailView.as_view(), name='coin-detail'),
+    path('chart/<str:coin_symbol>/', CoinChartView.as_view(), name='coin-chart'),
     
     # user
     path('userFeedback/', UserFeedbackView.as_view(), name='user-feedback'),

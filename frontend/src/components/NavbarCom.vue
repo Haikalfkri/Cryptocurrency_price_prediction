@@ -16,6 +16,8 @@
                     </li>
                     <li><router-link to="/predictPage" class="text-gray-900 hover:text-blue-700">Predict</router-link>
                     </li>
+                    <li><router-link to="/coinPage" class="text-gray-900 hover:text-blue-700">Coins</router-link>
+                    </li>
                     <li v-if="role === 'user'"><router-link to="/UserAboutUsPage"
                             class="text-gray-900 hover:text-blue-700">About Us</router-link></li>
 
@@ -73,6 +75,7 @@
                 </li>
                 <li><router-link to="/predictPage" class="block text-gray-900 hover:text-blue-700">Predict</router-link>
                 </li>
+                <li><router-link to="/coinPage" class="text-gray-900 hover:text-blue-700">Coins</router-link></li>
                 <li v-if="role === 'user'"><router-link to="/UserAboutUsPage"
                         class="block text-gray-900 hover:text-blue-700">About Us</router-link></li>
 

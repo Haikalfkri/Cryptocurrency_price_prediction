@@ -23,6 +23,8 @@ from concurrent.futures import ThreadPoolExecutor
 
 from newsapi import NewsApiClient
 
+from django.utils import timezone
+
 import os
 from dotenv import load_dotenv
 
@@ -499,15 +501,138 @@ class CryptoNewsListView(APIView):
         if cached_data:
             return Response(cached_data)
         
-        news_qs = CryptoNews.objects.order_by('-published_at')[:100]
+        news_qs = CryptoNews.objects.order_by('-published_at')[:200]
         serializer = CryptoNewsSerializer(news_qs, many=True)
-        cache.set('crypto_news_list', serializer.data, 3600)
+        cache.set('crypto_news_list', serializer.data, 18000)
         return Response(serializer.data)
 
 
 # Crypto Insight
 class CryptoInsightNewsListView(APIView):
     def get(self, request):
-        queryset = CryptoInsight.objects.all().order_by('-date')[:100]
+        cache_key = "crypto_insight_news"
+        cached_data = cache.get(cache_key)
+
+        if cached_data:
+            return Response(cached_data)
+
+        queryset = CryptoInsight.objects.all().order_by('-date')[:200]
         serializer = CryptoInsightSerializer(queryset, many=True)
-        return Response(serializer.data)
+        data = serializer.data
+
+        # Cache for 5 hours (18000 seconds)
+        cache.set(cache_key, data, timeout=18000)
+
+        return Response(data)
+
+
+
+COIN_MODELS = {
+    "BTC": BTCUSDTDetail,
+    "ETH": ETHUSDTDetail,
+    "BNB": BNBUSDTDetail,
+    "SOL": SOLUSDTDetail,
+    "XRP": XRPUSDTDetail,
+    "TON": TONUSDTDetail,
+    "ADA": ADAUSDTDetail,
+    "DOGE": DOGEUSDTDetail,
+    "AVAX": AVAXUSDTDetail,
+    "LINK": LINKUSDTDetail,
+    "DOT": DOTUSDTDetail,
+    "MATIC": MATICUSDTDetail,
+    "ICP": ICPUSDTDetail,
+    "LTC": LTCUSDTDetail,
+    "SHIB": SHIBUSDTDetail,
+    "BCH": BCHUSDTDetail,
+    "UNI": UNIUSDTDetail,
+    "APT": APTUSDTDetail,
+    "NEAR": NEARUSDTDetail,
+    "XLM": XLMUSDTDetail,
+}
+
+class AllCoinDetailListView(APIView):
+    def get(self, request):
+        now = datetime.utcnow().strftime('%Y-%m-%d_%H')
+        cache_key = f"all_coin_details_{now}"
+        cached_data = cache.get(cache_key)
+
+        if cached_data:
+            return Response(cached_data)
+
+        data = []
+        for coin_symbol, model in COIN_MODELS.items():
+            latest = model.objects.order_by('-time').first()
+            if latest:
+                data.append({
+                    "coin": coin_symbol,
+                    "image_url": latest.image_url,
+                    "current_price": latest.close_price,
+                    "high_price": latest.high_price,
+                    "low_price": latest.low_price,
+                    "volume_to": latest.volume_to,
+                    "percent_change_24h": latest.percent_change_24h,
+                    "percent_change_7d": latest.percent_change_7d,
+                    "market_cap": latest.market_cap,
+                })
+
+        cache.set(cache_key, data, timeout=3600)  # 1 hour cache
+        return Response(data)
+    
+
+class CoinDetailView(APIView):
+    def get(self, request, coin_symbol):
+        coin_symbol = coin_symbol.upper()
+        model = COIN_MODELS.get(coin_symbol)
+
+        if not model:
+            return Response({"error": "Coin not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        latest = model.objects.order_by('-time').first()
+        if not latest:
+            return Response({"error": "No data found for this coin"}, status=status.HTTP_404_NOT_FOUND)
+
+        data = {
+            "coin": coin_symbol,
+            "time": latest.time,
+            "open_price": latest.open_price,
+            "high_price": latest.high_price,
+            "low_price": latest.low_price,
+            "close_price": latest.close_price,
+            "volume_from": latest.volume_from,
+            "volume_to": latest.volume_to,
+            "market_cap": latest.market_cap,
+            "supply": latest.supply,
+            "max_supply": latest.max_supply,
+            "circulating_supply": latest.circulating_supply,
+            "image_url": latest.image_url,
+            "description": latest.description,
+            "percent_change_24h": latest.percent_change_24h,
+            "percent_change_7d": latest.percent_change_7d,
+        }
+
+        return Response(data, status=status.HTTP_200_OK)
+
+
+class CoinChartView(APIView):
+    def get(self, request, coin_symbol):
+        coin_symbol = coin_symbol.upper()
+        model = COIN_MODELS.get(coin_symbol)
+        if not model:
+            return Response({"error": "Coin not found"}, status=404)
+
+        try:
+            hours = int(request.GET.get('hours', 24))
+        except:
+            hours = 24
+
+        since = timezone.now() - timedelta(hours=hours)
+        queryset = model.objects.filter(time__gte=since).order_by('time')
+
+        data = [
+            {
+                "time": item.time.strftime("%Y-%m-%d %H:%M"),
+                "close_price": item.close_price
+            }
+            for item in queryset
+        ]
+        return Response(data)
