@@ -8,3 +8,6 @@ admin.site.register(CryptoSymbols)
 admin.site.register(UserFeedback)
 admin.site.register(CryptoNews)
 admin.site.register(CryptoInsight)
+
+
+# bitcoin history data

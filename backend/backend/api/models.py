@@ -97,3 +97,85 @@ class CryptoInsight(models.Model):
 
     def __str__(self):
         return f"{self.category} - {self.title[:100]}"
+    
+
+class BaseCoinModel(models.Model):
+    timestamp = models.DateTimeField(primary_key=True)
+    open = models.FloatField()
+    high = models.FloatField()
+    low = models.FloatField()
+    close = models.FloatField()
+    volume = models.FloatField()
+    close_time = models.BigIntegerField()
+    quote_asset_volume = models.FloatField()
+    num_trades = models.IntegerField()
+    taker_buy_base_vol = models.FloatField()
+    taker_buy_quote_vol = models.FloatField()
+
+    class Meta:
+        abstract = True
+
+
+class BTCUSDT(BaseCoinModel): pass
+class ETHUSDT(BaseCoinModel): pass
+class BNBUSDT(BaseCoinModel): pass
+class SOLUSDT(BaseCoinModel): pass
+class XRPUSDT(BaseCoinModel): pass
+class TONUSDT(BaseCoinModel): pass
+class ADAUSDT(BaseCoinModel): pass
+class DOGEUSDT(BaseCoinModel): pass
+class AVAXUSDT(BaseCoinModel): pass
+class LINKUSDT(BaseCoinModel): pass
+class DOTUSDT(BaseCoinModel): pass
+class MATICUSDT(BaseCoinModel): pass
+class ICPUSDT(BaseCoinModel): pass
+class LTCUSDT(BaseCoinModel): pass
+class SHIBUSDT(BaseCoinModel): pass
+class BCHUSDT(BaseCoinModel): pass
+class UNIUSDT(BaseCoinModel): pass
+class APTUSDT(BaseCoinModel): pass
+class NEARUSDT(BaseCoinModel): pass
+class XLMUSDT(BaseCoinModel): pass
+
+
+class BaseCoinDetail(models.Model):
+    time = models.DateTimeField(unique=True)
+    open_price = models.FloatField(null=True)
+    high_price = models.FloatField(null=True)
+    low_price = models.FloatField(null=True)
+    close_price = models.FloatField(null=True)
+    volume_from = models.FloatField(null=True)
+    volume_to = models.FloatField(null=True)
+    market_cap = models.FloatField(null=True)
+    supply = models.FloatField(null=True)
+    max_supply = models.FloatField(null=True)
+    circulating_supply = models.FloatField(null=True)
+    image_url = models.URLField(null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+    percent_change_24h = models.FloatField(null=True, blank=True)
+    percent_change_7d = models.FloatField(null=True, blank=True)
+
+
+    class Meta:
+        abstract = True
+
+class BTCUSDTDetail(BaseCoinDetail): pass
+class ETHUSDTDetail(BaseCoinDetail): pass
+class BNBUSDTDetail(BaseCoinDetail): pass
+class SOLUSDTDetail(BaseCoinDetail): pass
+class XRPUSDTDetail(BaseCoinDetail): pass
+class TONUSDTDetail(BaseCoinDetail): pass
+class ADAUSDTDetail(BaseCoinDetail): pass
+class DOGEUSDTDetail(BaseCoinDetail): pass
+class AVAXUSDTDetail(BaseCoinDetail): pass
+class LINKUSDTDetail(BaseCoinDetail): pass
+class DOTUSDTDetail(BaseCoinDetail): pass
+class MATICUSDTDetail(BaseCoinDetail): pass
+class ICPUSDTDetail(BaseCoinDetail): pass
+class LTCUSDTDetail(BaseCoinDetail): pass
+class SHIBUSDTDetail(BaseCoinDetail): pass
+class BCHUSDTDetail(BaseCoinDetail): pass
+class UNIUSDTDetail(BaseCoinDetail): pass
+class APTUSDTDetail(BaseCoinDetail): pass
+class NEARUSDTDetail(BaseCoinDetail): pass
+class XLMUSDTDetail(BaseCoinDetail): pass

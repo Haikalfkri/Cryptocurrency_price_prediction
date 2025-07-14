@@ -15,7 +15,9 @@ import CryptoInsightPage from "@/views/all/CryptoInsightPage.vue";
 
 import UserAboutUsPage from "@/views/user/UserAboutUsPage.vue";
 
+import CoinPage from "@/views/all/Coin.vue";
 
+import CoinDetail from "@/views/all/CoinDetail.vue";
 
 const routes = [
     // auth
@@ -89,6 +91,19 @@ const routes = [
         name: "PredictPage",
         component: PredictPage,
         meta: { requiresAuth: true }
+    },
+    {
+        path: "/coinPage",
+        name: "CoinPage",
+        component: CoinPage,
+        meta: { requiresAuth: true },
+    },
+    {
+        path: '/coin/:coin',
+        name: 'CoinDetail',
+        component: CoinDetail,
+        props: true,
+        meta: { requiresAuth: true },
     },
 
     // User
