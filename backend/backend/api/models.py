@@ -179,3 +179,50 @@ class UNIUSDTDetail(BaseCoinDetail): pass
 class APTUSDTDetail(BaseCoinDetail): pass
 class NEARUSDTDetail(BaseCoinDetail): pass
 class XLMUSDTDetail(BaseCoinDetail): pass
+
+
+class BasePrediction(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    date = models.DateField()  # tanggal prediksi untuk satu hari
+    predicted_price = models.FloatField()
+
+    # Plot images
+    original_plot = models.TextField()  # base64
+    predicted_plot = models.TextField()  # base64
+
+    # Analysis
+    price_analysis = models.JSONField()
+    sentiment_label = models.CharField(max_length=20)
+    recommendation = models.CharField(max_length=20)
+    final_score = models.FloatField()
+    summarize = models.TextField()
+
+    class Meta:
+        abstract = True
+
+
+# Coin-specific tables
+class BTCUSDT_Prediction(BasePrediction): pass
+class ETHUSDT_Prediction(BasePrediction): pass
+class BNBUSDT_Prediction(BasePrediction): pass
+class SOLUSDT_Prediction(BasePrediction): pass
+class XRPUSDT_Prediction(BasePrediction): pass
+class TONUSDT_Prediction(BasePrediction): pass
+class ADAUSDT_Prediction(BasePrediction): pass
+class DOGEUSDT_Prediction(BasePrediction): pass
+class AVAXUSDT_Prediction(BasePrediction): pass
+class LINKUSDT_Prediction(BasePrediction): pass
+class DOTUSDT_Prediction(BasePrediction): pass
+class MATICUSDT_Prediction(BasePrediction): pass
+class ICPUSDT_Prediction(BasePrediction): pass
+class LTCUSDT_Prediction(BasePrediction): pass
+class SHIBUSDT_Prediction(BasePrediction): pass
+class BCHUSDT_Prediction(BasePrediction): pass
+class UNIUSDT_Prediction(BasePrediction): pass
+class APTUSDT_Prediction(BasePrediction): pass
+class NEARUSDT_Prediction(BasePrediction): pass
+class XLMUSDT_Prediction(BasePrediction): pass
+
+
+
+

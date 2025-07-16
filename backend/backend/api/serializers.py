@@ -4,6 +4,8 @@ from django.contrib.auth.password_validation import validate_password
 
 from .models import *
 
+import re
+
 User = get_user_model()
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -62,3 +64,20 @@ class CryptoInsightSerializer(serializers.ModelSerializer):
     class Meta:
         model = CryptoInsight
         fields = ['title', 'link', 'date', 'source', 'image', 'category']
+
+
+class BasePredictionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BTCUSDT_Prediction  # default, nanti akan diganti dinamis di view
+        fields = '__all__'
+
+        def to_representation(self, instance):
+            data = super().to_representation(instance)
+        
+            if 'price_analysis' in data and 'daily_explanations' in data['price_analysis']:
+                explanations = data['price_analysis']['daily_explanations']
+                data['price_analysis']['daily_explanations'] = [
+                    re.sub(r'^\d+\.\s*', '', exp) for exp in explanations
+                ]
+            
+            return data

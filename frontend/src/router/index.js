@@ -4,12 +4,6 @@ import { createRouter, createWebHistory } from "vue-router";
 import LoginPage from "@/views/auth/LoginPage.vue";
 import RegisterPage from "@/views/auth/RegisterPage.vue";
 
-import CryptoPage from "@/views/all/CryptoPage.vue";
-import PredictPage from "@/views/all/PredictPage.vue";
-
-import CryptoDetailPage from "@/views/all/CryptoDetailPage.vue";
-import CryptoPredictionPage from "@/views/all/CryptoPredictionPage.vue";
-
 import CryptoNewsPage from "@/views/all/CryptoNewsPage.vue";
 import CryptoInsightPage from "@/views/all/CryptoInsightPage.vue";
 
@@ -64,33 +58,6 @@ const routes = [
       name: "CryptoInsight",
       component: CryptoInsightPage,
       meta: { requiresAuth: true }  
-    },
-
-
-    {
-        path: "/CryptoDetailPage",
-        name: "CryptoDetailpage",
-        component: CryptoDetailPage,
-        meta: { requiresAuth: true },
-    },
-
-    {
-        path: "/CryptoPredictionPage",
-        name: "CryptoPredictionPage",
-        component: CryptoPredictionPage,
-        meta: { requiresAuth: true },
-    },
-    {
-        path: "/cryptoPage",
-        name: "CryptoPage",
-        component: CryptoPage,
-        meta: { requiresAuth: true },
-    },
-    {
-        path: "/predictPage",
-        name: "PredictPage",
-        component: PredictPage,
-        meta: { requiresAuth: true }
     },
     {
         path: "/coinPage",

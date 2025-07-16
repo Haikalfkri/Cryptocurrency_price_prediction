@@ -10,7 +10,7 @@
                         </svg>
                     </div>
                     <h2 class="text-center text-2xl font-semibold text-gray-800">Login Successful!</h2>
-                    <p class="text-center text-gray-500 mt-2">Redirecting to crypto page</p>
+                    <p class="text-center text-gray-500 mt-2">Redirecting to news page</p>
                 </div>
             </div>
         </transition>
@@ -89,7 +89,7 @@ export default {
                 // Hide the popup after 2 seconds and redirect to the next page
                 setTimeout(() => {
                     this.showPopup = false;
-                    this.$router.push("/cryptoPage");
+                    this.$router.push("/CryptoNewsPage");
                 }, 2000);
             } catch (error) {
                 console.log("Login failed. Check your credentials");

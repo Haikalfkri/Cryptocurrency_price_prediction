@@ -636,3 +636,54 @@ class CoinChartView(APIView):
             for item in queryset
         ]
         return Response(data)
+    
+
+
+
+coin_prediction_models = {
+    "BTCUSDT": BTCUSDT_Prediction,
+    "ETHUSDT": ETHUSDT_Prediction,
+    "BNBUSDT": BNBUSDT_Prediction,
+    "SOLUSDT": SOLUSDT_Prediction,
+    "XRPUSDT": XRPUSDT_Prediction,
+    "TONUSDT": TONUSDT_Prediction,
+    "ADAUSDT": ADAUSDT_Prediction,
+    "DOGEUSDT": DOGEUSDT_Prediction,
+    "AVAXUSDT": AVAXUSDT_Prediction,
+    "LINKUSDT": LINKUSDT_Prediction,
+    "DOTUSDT": DOTUSDT_Prediction,
+    "MATICUSDT": MATICUSDT_Prediction,
+    "ICPUSDT": ICPUSDT_Prediction,
+    "LTCUSDT": LTCUSDT_Prediction,
+    "SHIBUSDT": SHIBUSDT_Prediction,
+    "BCHUSDT": BCHUSDT_Prediction,
+    "UNIUSDT": UNIUSDT_Prediction,
+    "APTUSDT": APTUSDT_Prediction,
+    "NEARUSDT": NEARUSDT_Prediction,
+    "XLMUSDT": XLMUSDT_Prediction,
+}
+
+class PredictionAPIView(APIView):
+    def get(self, request, symbol):
+        symbol = symbol.upper()
+        model = coin_prediction_models.get(symbol)
+        if not model:
+            return Response({"error": "Symbol not supported"}, status=400)
+
+        try:
+            days = int(request.GET.get("days", 2))
+            if days not in [2, 7, 14]:
+                return Response({"error": "Days must be 2, 7, or 14."}, status=400)
+        except ValueError:
+            return Response({"error": "Invalid days parameter."}, status=400)
+
+        cache_key = f"prediction_{symbol}_{days}"
+        cached_data = cache.get(cache_key)
+        if cached_data:
+            return Response(cached_data, status=200)
+
+        queryset = model.objects.all().order_by('-date')[:days]
+        serializer = BasePredictionSerializer(queryset, many=True)
+        cache.set(cache_key, serializer.data, timeout=3600)  # cache for 1 hour
+
+        return Response(serializer.data, status=200)
