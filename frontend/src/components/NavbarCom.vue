@@ -4,17 +4,13 @@
             <!-- Left Section: Title and Links -->
             <div class="flex items-center space-x-6">
                 <a href="#" class="flex items-center space-x-3">
-                    <span class="hidden md:inline text-lg font-semibold">Cryptocurrency Price
-                        Prediction</span>
+                    <span class="hidden md:inline text-xl font-bold">Crypeek</span>
                 </a>
-                <ul class="hidden md:flex space-x-6 text-sm font-medium">
-                    <li><router-link to="/cryptoPage" class="text-gray-900 hover:text-blue-700">Crypto</router-link>
-                    </li>
+                <ul class="hidden md:flex space-x-6 text-md font-semibold">
                     <li><router-link to="/CryptoNewsPage" class="text-gray-900 hover:text-blue-700">News</router-link>
                     </li>
-                    <li><router-link to="/CryptoInsight" class="text-gray-900 hover:text-blue-700">Insights</router-link>
-                    </li>
-                    <li><router-link to="/predictPage" class="text-gray-900 hover:text-blue-700">Predict</router-link>
+                    <li><router-link to="/CryptoInsight"
+                            class="text-gray-900 hover:text-blue-700">Insights</router-link>
                     </li>
                     <li><router-link to="/coinPage" class="text-gray-900 hover:text-blue-700">Coins</router-link>
                     </li>
@@ -33,25 +29,37 @@
                 <!-- Profile -->
                 <div class="relative">
                     <button @click="toggleDropdown"
-                        class="flex text-sm bg-gray-800 rounded-full focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600">
-                        <span class="sr-only">Open user menu</span>
-                        <img class="w-8 h-8 rounded-full"
+                        class="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:ring-2 hover:ring-indigo-500 transition">
+                        <img class="w-10 h-10 rounded-full object-cover"
                             src="https://img.freepik.com/free-vector/smiling-young-man-illustration_1308-174401.jpg"
-                            alt="user photo">
+                            alt="User Avatar">
                     </button>
-                    <div v-show="isDropdownOpen" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-md">
-                        <div class="px-4 py-3">
-                            <span class="block text-sm text-gray-900">{{ username }}</span>
-                            <span class="block text-sm text-gray-900">{{ email }}</span>
+
+                    <!-- Dropdown Menu -->
+                    <transition name="fade">
+                        <div v-show="isDropdownOpen"
+                            class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg ring-1 ring-black/5 z-50">
+                            <div class="px-4 py-3 border-b border-gray-100">
+                                <p class="text-sm font-medium text-gray-900">{{ username }}</p>
+                                <p class="text-sm text-gray-500 truncate">{{ email }}</p>
+                            </div>
+                            <ul class="py-2">
+                                <li>
+                                    <a @click.prevent="handleLogout" href="#"
+                                        class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition rounded-b-lg">
+                                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor"
+                                            stroke-width="2" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1m0-9V6" />
+                                        </svg>
+                                        Logout
+                                    </a>
+                                </li>
+                            </ul>
                         </div>
-                        <ul class="py-2">
-                            <li>
-                                <a @click.prevent="handleLogout" href="#"
-                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</a>
-                            </li>
-                        </ul>
-                    </div>
+                    </transition>
                 </div>
+
 
                 <!-- Mobile Menu Button -->
                 <button @click="toggleMobileMenu" class="md:hidden p-2 text-gray-500 dark:text-gray-400">
@@ -69,13 +77,12 @@
         <!-- Mobile Menu -->
         <div v-show="isMobileMenuOpen" class="md:hidden px-4 pb-4">
             <ul class="space-y-2 text-sm font-medium">
-                <li><router-link to="/cryptoPage" class="block text-gray-900 hover:text-blue-700">Crypto</router-link>
-                </li>
                 <li><router-link to="/CryptoNewsPage" class="block text-gray-900 hover:text-blue-700">News</router-link>
                 </li>
-                <li><router-link to="/predictPage" class="block text-gray-900 hover:text-blue-700">Predict</router-link>
+                <li><router-link to="/CryptoInsight"
+                        class="block text-gray-900 hover:text-blue-700">Insights</router-link>
                 </li>
-                <li><router-link to="/coinPage" class="text-gray-900 hover:text-blue-700">Coins</router-link></li>
+                <li><router-link to="/coinPage" class="block text-gray-900 hover:text-blue-700">Coins</router-link></li>
                 <li v-if="role === 'user'"><router-link to="/UserAboutUsPage"
                         class="block text-gray-900 hover:text-blue-700">About Us</router-link></li>
 

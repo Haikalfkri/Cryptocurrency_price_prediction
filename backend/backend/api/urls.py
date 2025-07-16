@@ -26,6 +26,9 @@ urlpatterns = [
     path('allCoinDetailList/', AllCoinDetailListView.as_view(), name='all-coin-detail-list'),
     path('coin/<str:coin_symbol>/', CoinDetailView.as_view(), name='coin-detail'),
     path('chart/<str:coin_symbol>/', CoinChartView.as_view(), name='coin-chart'),
+
+    # coin prediksi
+    path('prediction/<str:symbol>/', PredictionAPIView.as_view(), name='coin-prediction'),
     
     # user
     path('userFeedback/', UserFeedbackView.as_view(), name='user-feedback'),
